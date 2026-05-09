@@ -64,3 +64,50 @@ describe("schema rejects invalid data", () => {
     expect(workspaceSchema.safeParse({ icon: "" }).success).toBe(false);
   });
 });
+
+describe("candidate.archived の取り扱い", () => {
+  const baseCandidate = {
+    id: "c-archived-test",
+    profile: {
+      name: "テスト 太郎",
+      birthday: "",
+      source: "",
+      email: "",
+      phone: "",
+      address: "",
+      recruiter: "",
+      desiredSalaryMin: "",
+      desiredSalaryMax: "",
+      availableStartDate: "",
+      careerText: "",
+      motivationFull: "",
+    },
+    scorecards: [],
+    stage: "screening" as const,
+  };
+
+  it("archived 未指定なら false がデフォルトで埋まる", () => {
+    const result = candidatesSchema.safeParse([baseCandidate]);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data[0].archived).toBe(false);
+    }
+  });
+
+  it("archived: true を許容する", () => {
+    const result = candidatesSchema.safeParse([
+      { ...baseCandidate, archived: true },
+    ]);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data[0].archived).toBe(true);
+    }
+  });
+
+  it("archived が boolean でなければ不可", () => {
+    const result = candidatesSchema.safeParse([
+      { ...baseCandidate, archived: "yes" },
+    ]);
+    expect(result.success).toBe(false);
+  });
+});

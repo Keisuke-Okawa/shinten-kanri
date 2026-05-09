@@ -57,7 +57,7 @@ import {
   createMinimalScorecard,
 } from "@/lib/data/factories";
 import { getCandidateAverageScore } from "@/lib/computed/scorecards";
-import { STAGE_LABELS } from "@/lib/labels";
+import { ARCHIVED_GROUP_LABEL, STAGE_LABELS } from "@/lib/labels";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { GlobalHeader } from "@/components/workspace/GlobalHeader";
 import { PositionPane } from "@/components/workspace/PositionPane";
@@ -186,6 +186,7 @@ export function Workspace({
       profile: createMinimalProfile(name),
       scorecards: [],
       stage,
+      archived: false,
     };
     setCandidates((prev) => [...prev, newCandidate]);
     setSelectedCandidateId(newId);
@@ -194,16 +195,74 @@ export function Workspace({
     setPane4ManuallyClosed(false);
   }, []);
 
-  const deleteCandidate = useCallback((id: string) => {
+  // 候補者をアーカイブ（論理削除）する。データは残し `archived: true` を立てる。
+  // 復元は `restoreCandidate` から、もしくは Pane 2「アーカイブ済み」グループの
+  // 「復元」ボタン経由。アクティブ候補者をアーカイブした場合は、非 archived の
+  // 先頭候補者にフォールバックし、ステージ詳細（Pane 4）はクリアする。
+  const archiveCandidate = useCallback((id: string) => {
     setCandidates((prev) => {
-      const next = prev.filter((c) => c.id !== id);
+      const next = prev.map((c) =>
+        c.id === id ? { ...c, archived: true } : c,
+      );
       setSelectedCandidateId((prevId) => {
         if (prevId !== id) return prevId;
-        return next.length > 0 ? next[0].id : "";
+        const fallback = next.find((c) => !c.archived);
+        return fallback ? fallback.id : "";
       });
       return next;
     });
+    setSelectedDetail(null);
+    setPane4ManuallyClosed(false);
   }, []);
+
+  // アーカイブ済み候補者を元のステージに復元する。`stage` は archived 中も保持
+  // しているので、そのステージへ戻すだけでよい。
+  const restoreCandidate = useCallback((id: string) => {
+    setCandidates((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, archived: false } : c)),
+    );
+  }, []);
+
+  // 候補者を別ステージへ移動 / 同ステージ内で並び替え。
+  //
+  // `toStage` は移動先のステージキー。`toIndex` はそのステージグループ内での
+  // 0-origin の挿入位置。配列順を SSoT としているため、candidates 配列上の
+  // 絶対インデックスに変換して `splice` 相当の挿入を行う。
+  //
+  // 同ステージ内ドラッグ・別ステージへのドラッグの両方をこの 1 関数で扱う。
+  // archived 候補者は対象外（DnD はアクティブな候補者のみ可能）。
+  const moveCandidate = useCallback(
+    (id: string, toStage: StageKey, toIndex: number) => {
+      setCandidates((prev) => {
+        const subjectIndex = prev.findIndex((c) => c.id === id);
+        if (subjectIndex < 0) return prev;
+        const subject = prev[subjectIndex];
+        if (subject.archived) return prev;
+
+        const without = prev.filter((_, i) => i !== subjectIndex);
+        const updated: Candidate = { ...subject, stage: toStage };
+
+        let count = 0;
+        let absInsertAt = without.length;
+        for (let i = 0; i < without.length; i++) {
+          const c = without[i];
+          if (!c.archived && c.stage === toStage) {
+            if (count === toIndex) {
+              absInsertAt = i;
+              break;
+            }
+            count++;
+          }
+        }
+        return [
+          ...without.slice(0, absInsertAt),
+          updated,
+          ...without.slice(absInsertAt),
+        ];
+      });
+    },
+    [],
+  );
 
   const addDepartment = useCallback((name: string) => {
     setDepartments((prev) => [
@@ -301,21 +360,37 @@ export function Workspace({
   const positionTitle = "フロントエンドエンジニア";
   const departmentTitle = "プロダクト開発";
 
-  const candidateGroups: Group[] = useMemo(
-    () =>
-      STAGE_ORDER.map((stage) => ({
-        stage,
-        label: STAGE_LABELS[stage],
-        items: candidates
-          .filter((c) => c.stage === stage)
-          .map((c) => ({
-            id: c.id,
-            name: c.profile.name,
-            averageScore: getCandidateAverageScore(c),
-          })),
-      })).filter((g) => g.items.length > 0),
-    [candidates],
-  );
+  const candidateGroups: Group[] = useMemo(() => {
+    // ステージグループは常に 4 段階すべて表示する。空ステージも残すことで、
+    // 「最後の 1 名を別ステージへ動かしたら戻し先が消える」事故を防ぐ
+    // （ADR-006 §2-2 の補足）。
+    const stageGroups: Group[] = STAGE_ORDER.map((stage) => ({
+      kind: "stage" as const,
+      stage,
+      label: STAGE_LABELS[stage],
+      items: candidates
+        .filter((c) => !c.archived && c.stage === stage)
+        .map((c) => ({
+          id: c.id,
+          name: c.profile.name,
+          averageScore: getCandidateAverageScore(c),
+        })),
+    }));
+
+    const archivedItems = candidates
+      .filter((c) => c.archived)
+      .map((c) => ({
+        id: c.id,
+        name: c.profile.name,
+        averageScore: getCandidateAverageScore(c),
+      }));
+
+    if (archivedItems.length === 0) return stageGroups;
+    return [
+      ...stageGroups,
+      { kind: "archived" as const, label: ARCHIVED_GROUP_LABEL, items: archivedItems },
+    ];
+  }, [candidates]);
 
   return (
     // shadcn/ui の SidebarProvider が外側を取り、Pane 1 (`<Sidebar>`) を全高で固定
@@ -352,7 +427,9 @@ export function Workspace({
             selectedCandidateId={selectedCandidateId}
             onSelectCandidate={selectCandidate}
             onAddCandidate={addCandidate}
-            onDeleteCandidate={deleteCandidate}
+            onArchiveCandidate={archiveCandidate}
+            onRestoreCandidate={restoreCandidate}
+            onMoveCandidate={moveCandidate}
           />
           <CandidateDashboardPane
             profile={profile}

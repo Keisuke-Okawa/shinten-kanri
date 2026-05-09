@@ -17,6 +17,11 @@ type DeleteConfirmDialogProps = {
   title: string;
   itemName: string;
   onConfirm: () => void;
+  /** 既定は「『{itemName}』を削除します。この操作は取り消せません。」。
+   *  論理削除（アーカイブ）など別文言が必要な呼び出し元のために上書きできる。 */
+  description?: string;
+  /** 既定は「削除」。アーカイブ等で別ラベルにしたい場合に上書きする。 */
+  actionLabel?: string;
 };
 
 export function DeleteConfirmDialog({
@@ -25,6 +30,8 @@ export function DeleteConfirmDialog({
   title,
   itemName,
   onConfirm,
+  description,
+  actionLabel = "削除",
 }: DeleteConfirmDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -32,12 +39,12 @@ export function DeleteConfirmDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
           <AlertDialogDescription>
-            「{itemName}」を削除します。この操作は取り消せません。
+            {description ?? `「${itemName}」を削除します。この操作は取り消せません。`}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>キャンセル</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm}>削除</AlertDialogAction>
+          <AlertDialogAction onClick={onConfirm}>{actionLabel}</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

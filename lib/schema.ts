@@ -164,6 +164,11 @@ export const candidateSchema = z.object({
   profile: profileSchema,
   scorecards: z.array(scorecardSchema),
   stage: stageKeySchema,
+  // 論理削除フラグ。`stage` とは直交する。アーカイブされた候補者は通常のステージ
+  // グループから外れ、Pane 2 末尾の「アーカイブ済み」グループに表示される。
+  // 復元時は `stage` をそのまま使って元のステージへ戻る。JSON シードでは省略可
+  // （`.default(false)` で読み込み時に補完）。
+  archived: z.boolean().default(false),
 });
 export type Candidate = z.infer<typeof candidateSchema>;
 
@@ -203,14 +208,15 @@ export type CandidateRow = {
   averageScore: number | null;
 };
 
-// Pane 2 のグループ表示単位（ステージごとに候補者行を束ねる）。
+// Pane 2 のグループ表示単位（ステージ or アーカイブ済み）。
 // 候補者データは `INITIAL_CANDIDATES` を SSoT とし、`candidateGroups` で
 // 派生計算して CandidateListPane に props で渡す（Workspace 内で計算）。
 //
-// stage: StageKey は「+ ボタン」から `addCandidate(stage)` を呼ぶときの
-// 引数に使う（型安全に StageKey を渡すため）。日本語ラベルは label に分離。
-export type Group = {
-  stage: StageKey;
-  label: string;
-  items: CandidateRow[];
-};
+// `kind: "stage"` は通常の選考ステージグループ。`stage: StageKey` は
+// 「+ ボタン」から `addCandidate(stage)` を呼ぶときの引数に使う。
+// `kind: "archived"` は archived === true の候補者を集めた末尾の仮想グループで、
+// 「+ 追加」操作は持たず、復元のみ可能。並び順は `kind: "stage"` を STAGE_ORDER で
+// 並べた後、最後に `kind: "archived"` を 1 つだけ置く（要素があるときのみ表示）。
+export type Group =
+  | { kind: "stage"; stage: StageKey; label: string; items: CandidateRow[] }
+  | { kind: "archived"; label: string; items: CandidateRow[] };

@@ -32,6 +32,10 @@ export const STAGE_LABELS: Record<StageKey, string> = {
   final: "最終面接",
 };
 
+// Pane 2 末尾の「アーカイブ済み」グループの見出しラベル。
+// archived === true の候補者を束ねる仮想グループで、ステージとは直交した概念。
+export const ARCHIVED_GROUP_LABEL = "アーカイブ済み";
+
 // ===== Pane 3 ダッシュボードのセクション見出し（ADR-0014） =====
 
 export const PANE3_SECTION = {

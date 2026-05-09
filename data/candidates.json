@@ -202,5 +202,45 @@
     },
     "scorecards": [],
     "stage": "final"
+  },
+  {
+    "id": "c7",
+    "profile": {
+      "name": "中村 聡",
+      "birthday": "",
+      "source": "",
+      "email": "",
+      "phone": "",
+      "address": "",
+      "recruiter": "",
+      "desiredSalaryMin": "",
+      "desiredSalaryMax": "",
+      "availableStartDate": "",
+      "careerText": "",
+      "motivationFull": ""
+    },
+    "scorecards": [],
+    "stage": "first",
+    "archived": true
+  },
+  {
+    "id": "c8",
+    "profile": {
+      "name": "小林 結衣",
+      "birthday": "",
+      "source": "",
+      "email": "",
+      "phone": "",
+      "address": "",
+      "recruiter": "",
+      "desiredSalaryMin": "",
+      "desiredSalaryMax": "",
+      "availableStartDate": "",
+      "careerText": "",
+      "motivationFull": ""
+    },
+    "scorecards": [],
+    "stage": "screening",
+    "archived": true
   }
 ]
