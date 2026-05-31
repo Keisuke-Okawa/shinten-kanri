@@ -45,6 +45,7 @@ export type TaskKind = z.infer<typeof taskKindSchema>;
 export const storeProfileSchema = z.object({
   customerCode: z.string(),
   name: z.string(),
+  companyName: z.string(),
   businessType: z.string(),
   address: z.string(),
   phone: z.string(),
@@ -66,15 +67,27 @@ export const storeProfileSchema = z.object({
   specialNotes: z.string(),
   invoiceType: z.string(),
   serverInstallDate: z.string(),
+  handoverDate: z.string(),
   accountChangeEmptyReturn: z.boolean(),
   elevatorAvailable: z.boolean(),
   dedicatedEntrance: z.boolean(),
   notesAndAttachments: z.string(),
+  seatCount: z.string(),
+  avgSpendPerCustomer: z.string(),
+  expectedSales: z.string(),
   // 条件付きタスク連動トグル
   webOrder: z.boolean(),
   proxyDelivery: z.boolean(),
   congratulatoryFlowers: z.boolean(),
-  customerWorkStart: z.string(),
+  customerWorkStartWeekday: z.string(),
+  customerWorkEndWeekday: z.string(),
+  customerWorkStartWeekend: z.string(),
+  customerWorkEndWeekend: z.string(),
+  businessHours1Start: z.string(),
+  businessHours1End: z.string(),
+  businessHours2Start: z.string(),
+  businessHours2End: z.string(),
+  pane2Memo: z.string(),
 });
 export type StoreProfile = z.infer<typeof storeProfileSchema>;
 

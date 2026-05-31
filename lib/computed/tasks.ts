@@ -10,7 +10,7 @@ import {
 /** 配送開始時刻が出勤時刻より前なら鍵タスクが必要 */
 export function needsKeyCustody(profile: StoreProfile): boolean {
   const deliveryStart = parseTime(profile.deliveryTimeStart);
-  const workStart = parseTime(profile.customerWorkStart);
+  const workStart = parseTime(profile.customerWorkStartWeekday);
   if (deliveryStart === null || workStart === null) return false;
   return deliveryStart < workStart;
 }

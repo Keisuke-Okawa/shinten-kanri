@@ -17,6 +17,9 @@ export type { InlineTextFieldProps } from "./InlineTextField";
 export { InlineDateField } from "./InlineDateField";
 export type { InlineDateFieldProps } from "./InlineDateField";
 
+export { InlineTimeField } from "./InlineTimeField";
+export type { InlineTimeFieldProps } from "./InlineTimeField";
+
 export { InlineComboboxField } from "./InlineComboboxField";
 export type {
   ComboOption,

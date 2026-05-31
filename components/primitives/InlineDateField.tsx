@@ -27,7 +27,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { formatISODate, parseISODate } from "@/lib/computed/profile";
+import { formatDisplayDate, formatISODate, parseISODate } from "@/lib/computed/profile";
 
 export type InlineDateFieldProps = {
   /** ISO 8601 (YYYY-MM-DD) 形式の文字列。空で「日付を選択」placeholder */
@@ -60,7 +60,7 @@ export function InlineDateField({
               : "truncate text-muted-foreground"
           }
         >
-          {value || "日付を選択"}
+          {value ? formatDisplayDate(value) : "日付を選択"}
         </span>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-auto p-0">

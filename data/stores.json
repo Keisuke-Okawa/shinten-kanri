@@ -5,6 +5,7 @@
     "profile": {
       "customerCode": "JP-12345",
       "name": "酒の森 品川店",
+      "companyName": "㈱酒の森ホールディングス",
       "businessType": "居酒屋",
       "address": "東京都港区高輪3-13-1",
       "phone": "03-1234-5678",
@@ -26,14 +27,26 @@
       "specialNotes": "初回納品時に空容器回収あり",
       "invoiceType": "納品書",
       "serverInstallDate": "2026-06-08",
+      "handoverDate": "2026-06-14",
       "accountChangeEmptyReturn": true,
       "elevatorAvailable": true,
       "dedicatedEntrance": false,
       "notesAndAttachments": "搬入経路の写真を添付予定",
+      "seatCount": "48",
+      "avgSpendPerCustomer": "3500",
+      "expectedSales": "168000",
       "webOrder": true,
       "proxyDelivery": false,
       "congratulatoryFlowers": true,
-      "customerWorkStart": "11:00"
+      "customerWorkStartWeekday": "11:00",
+      "customerWorkEndWeekday": "23:00",
+      "customerWorkStartWeekend": "10:30",
+      "customerWorkEndWeekend": "23:00",
+      "businessHours1Start": "11:00",
+      "businessHours1End": "14:00",
+      "businessHours2Start": "17:00",
+      "businessHours2End": "23:00",
+      "pane2Memo": ""
     },
     "tasks": [
       {
@@ -106,6 +119,7 @@
     "profile": {
       "customerCode": "JP-12346",
       "name": "酒の森 渋谷店",
+      "companyName": "㈱酒の森ホールディングス",
       "businessType": "バー",
       "address": "東京都渋谷区道玄坂1-2-3",
       "phone": "03-9876-5432",
@@ -127,14 +141,26 @@
       "specialNotes": "",
       "invoiceType": "請求書",
       "serverInstallDate": "",
+      "handoverDate": "",
       "accountChangeEmptyReturn": false,
       "elevatorAvailable": false,
       "dedicatedEntrance": true,
       "notesAndAttachments": "",
+      "seatCount": "32",
+      "avgSpendPerCustomer": "4000",
+      "expectedSales": "",
       "webOrder": false,
       "proxyDelivery": true,
       "congratulatoryFlowers": false,
-      "customerWorkStart": "10:00"
+      "customerWorkStartWeekday": "10:00",
+      "customerWorkEndWeekday": "24:00",
+      "customerWorkStartWeekend": "10:00",
+      "customerWorkEndWeekend": "24:00",
+      "businessHours1Start": "18:00",
+      "businessHours1End": "26:00",
+      "businessHours2Start": "",
+      "businessHours2End": "",
+      "pane2Memo": ""
     },
     "tasks": [
       {
@@ -175,6 +201,7 @@
     "profile": {
       "customerCode": "JP-12300",
       "name": "酒の森 横浜店",
+      "companyName": "㈱酒の森ホールディングス",
       "businessType": "レストラン",
       "address": "神奈川県横浜市西区みなとみらい2-2-1",
       "phone": "045-111-2222",
@@ -196,14 +223,26 @@
       "specialNotes": "",
       "invoiceType": "納品書",
       "serverInstallDate": "2026-03-28",
+      "handoverDate": "2026-04-04",
       "accountChangeEmptyReturn": false,
       "elevatorAvailable": true,
       "dedicatedEntrance": true,
       "notesAndAttachments": "オープン完了",
+      "seatCount": "60",
+      "avgSpendPerCustomer": "2800",
+      "expectedSales": "168000",
       "webOrder": true,
       "proxyDelivery": false,
       "congratulatoryFlowers": false,
-      "customerWorkStart": "08:00"
+      "customerWorkStartWeekday": "08:00",
+      "customerWorkEndWeekday": "22:00",
+      "customerWorkStartWeekend": "08:00",
+      "customerWorkEndWeekend": "22:00",
+      "businessHours1Start": "11:00",
+      "businessHours1End": "15:00",
+      "businessHours2Start": "17:00",
+      "businessHours2End": "22:00",
+      "pane2Memo": "オープン完了済み"
     },
     "tasks": [
       {

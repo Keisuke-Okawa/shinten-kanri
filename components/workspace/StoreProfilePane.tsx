@@ -3,7 +3,6 @@
 import { cn } from "@/lib/utils";
 import { type StoreProfile } from "@/lib/schema";
 import { PANE2_SECTION } from "@/lib/labels";
-import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Toggle } from "@/components/ui/toggle";
@@ -16,14 +15,10 @@ import {
 import {
   InlineTextField,
   InlineDateField,
-  InlineSelectField,
   InlineTextareaField,
   InlineFieldRow,
+  InlineTimeField,
 } from "@/components/primitives";
-
-const PAYMENT_OPTIONS = ["現金", "振込"] as const;
-const SMOKING_OPTIONS = ["禁煙", "分煙", "喫煙"] as const;
-const ORDER_OPTIONS = ["WEB", "FAX", "電話"] as const;
 
 type StoreProfilePaneProps = {
   profile: StoreProfile;
@@ -40,16 +35,47 @@ function ConditionToggle({
   onPressedChange: (v: boolean) => void;
 }) {
   return (
-    <div className="flex items-center justify-between gap-2">
-      <span className="text-sm text-muted-foreground">{label}</span>
-      <Toggle
-        pressed={pressed}
-        onPressedChange={onPressedChange}
-        size="sm"
-        aria-label={label}
-      >
-        {pressed ? "ON" : "OFF"}
-      </Toggle>
+    <Toggle
+      pressed={pressed}
+      onPressedChange={onPressedChange}
+      size="sm"
+      aria-label={label}
+      className="px-3"
+    >
+      {label}
+    </Toggle>
+  );
+}
+
+function TimeRange({
+  label,
+  startValue,
+  endValue,
+  onSaveStart,
+  onSaveEnd,
+}: {
+  label: string;
+  startValue: string;
+  endValue: string;
+  onSaveStart: (v: string) => void;
+  onSaveEnd: (v: string) => void;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-2 text-sm">
+      <span className="shrink-0 text-muted-foreground">{label}</span>
+      <div className="flex items-center gap-1.5">
+        <InlineTimeField
+          value={startValue}
+          onSave={onSaveStart}
+          ariaLabel={`${label}開始`}
+        />
+        <span className="shrink-0 text-xs text-muted-foreground">〜</span>
+        <InlineTimeField
+          value={endValue}
+          onSave={onSaveEnd}
+          ariaLabel={`${label}終了`}
+        />
+      </div>
     </div>
   );
 }
@@ -62,19 +88,20 @@ export function StoreProfilePane({
     setProfile((prev) => ({ ...prev, [key]: value }));
 
   return (
-    <section className="flex w-[320px] shrink-0 flex-col border-r border-border bg-background">
+    <section className="flex w-[400px] shrink-0 flex-col border-r border-border bg-background">
       <ScrollArea className="min-h-0 flex-1">
         <div className="flex flex-col gap-4 p-4">
+          {/* 基本情報 */}
           <Card>
             <CardHeader className="pb-2">
               <CardTitle>{PANE2_SECTION.basic}</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-2.5">
-              <InlineFieldRow label="得意先コード">
+              <InlineFieldRow label="企業名">
                 <InlineTextField
-                  value={profile.customerCode}
-                  onSave={(v) => update("customerCode", v)}
-                  ariaLabel="得意先コード"
+                  value={profile.companyName}
+                  onSave={(v) => update("companyName", v)}
+                  ariaLabel="企業名"
                 />
               </InlineFieldRow>
               <InlineFieldRow label="店名">
@@ -84,13 +111,6 @@ export function StoreProfilePane({
                   ariaLabel="店名"
                 />
               </InlineFieldRow>
-              <InlineFieldRow label="業態">
-                <InlineTextField
-                  value={profile.businessType}
-                  onSave={(v) => update("businessType", v)}
-                  ariaLabel="業態"
-                />
-              </InlineFieldRow>
               <InlineFieldRow label="住所">
                 <InlineTextField
                   value={profile.address}
@@ -98,128 +118,165 @@ export function StoreProfilePane({
                   ariaLabel="住所"
                 />
               </InlineFieldRow>
-              <InlineFieldRow label="電話番号">
-                <InlineTextField
-                  value={profile.phone}
-                  onSave={(v) => update("phone", v)}
-                  ariaLabel="電話番号"
-                />
-              </InlineFieldRow>
-              <InlineFieldRow label="店長">
-                <InlineTextField
-                  value={profile.managerName}
-                  onSave={(v) => update("managerName", v)}
-                  ariaLabel="店長"
-                />
-              </InlineFieldRow>
-              <InlineFieldRow label="オープン日">
-                <InlineDateField
-                  value={profile.openDate}
-                  onSave={(v) => update("openDate", v)}
-                  ariaLabel="オープン日"
-                />
-              </InlineFieldRow>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-2.5">
+                <InlineFieldRow label="TEL">
+                  <InlineTextField
+                    value={profile.phone}
+                    onSave={(v) => update("phone", v)}
+                    ariaLabel="電話番号"
+                  />
+                </InlineFieldRow>
+                <InlineFieldRow label="得意先CD">
+                  <InlineTextField
+                    value={profile.customerCode}
+                    onSave={(v) => update("customerCode", v)}
+                    ariaLabel="得意先コード"
+                  />
+                </InlineFieldRow>
+              </div>
+              <Separator />
+              <div className="grid grid-cols-2 gap-x-4 gap-y-2.5">
+                <InlineFieldRow label="オープン日">
+                  <InlineDateField
+                    value={profile.openDate}
+                    onSave={(v) => update("openDate", v)}
+                    ariaLabel="オープン日"
+                  />
+                </InlineFieldRow>
+                <InlineFieldRow label="初回納品">
+                  <InlineDateField
+                    value={profile.firstDeliveryDate}
+                    onSave={(v) => update("firstDeliveryDate", v)}
+                    ariaLabel="初回納品日"
+                  />
+                </InlineFieldRow>
+                <InlineFieldRow label="サーバー設置">
+                  <InlineDateField
+                    value={profile.serverInstallDate}
+                    onSave={(v) => update("serverInstallDate", v)}
+                    ariaLabel="サーバー設置日"
+                  />
+                </InlineFieldRow>
+                <InlineFieldRow label="引き渡し日">
+                  <InlineDateField
+                    value={profile.handoverDate}
+                    onSave={(v) => update("handoverDate", v)}
+                    ariaLabel="引き渡し日"
+                  />
+                </InlineFieldRow>
+              </div>
+              <Separator />
+              <div className="grid grid-cols-2 gap-x-4 gap-y-2.5">
+                <InlineFieldRow label="席数">
+                  <InlineTextField
+                    value={profile.seatCount}
+                    onSave={(v) => update("seatCount", v)}
+                    ariaLabel="席数"
+                  />
+                </InlineFieldRow>
+                <InlineFieldRow label="客単価">
+                  <InlineTextField
+                    value={profile.avgSpendPerCustomer}
+                    onSave={(v) => update("avgSpendPerCustomer", v)}
+                    ariaLabel="客単価"
+                  />
+                </InlineFieldRow>
+                <InlineFieldRow label="休日">
+                  <InlineTextField
+                    value={profile.holidays}
+                    onSave={(v) => update("holidays", v)}
+                    ariaLabel="休日"
+                  />
+                </InlineFieldRow>
+                <InlineFieldRow label="売上見込">
+                  <InlineTextField
+                    value={profile.expectedSales}
+                    onSave={(v) => update("expectedSales", v)}
+                    ariaLabel="売上見込"
+                  />
+                </InlineFieldRow>
+              </div>
             </CardContent>
           </Card>
 
+          {/* 条件設定（時間設定を統合） */}
           <Card>
             <CardHeader className="pb-2">
               <CardTitle>{PANE2_SECTION.conditions}</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-3">
-              <ConditionToggle
-                label="WEB注文"
-                pressed={profile.webOrder}
-                onPressedChange={(v) => update("webOrder", v)}
-              />
-              <ConditionToggle
-                label="代配（代理配送）"
-                pressed={profile.proxyDelivery}
-                onPressedChange={(v) => update("proxyDelivery", v)}
-              />
-              <ConditionToggle
-                label="祝い花"
-                pressed={profile.congratulatoryFlowers}
-                onPressedChange={(v) => update("congratulatoryFlowers", v)}
-              />
-              <Separator />
-              <InlineFieldRow label="配送時間">
-                <div className="flex items-center gap-1.5">
-                  <InlineTextField
-                    value={profile.deliveryTimeStart}
-                    onSave={(v) => update("deliveryTimeStart", v)}
-                    ariaLabel="配送開始"
-                  />
-                  <span className="shrink-0 text-xs text-muted-foreground">〜</span>
-                  <InlineTextField
-                    value={profile.deliveryTimeEnd}
-                    onSave={(v) => update("deliveryTimeEnd", v)}
-                    ariaLabel="配送終了"
-                  />
-                </div>
-              </InlineFieldRow>
-              <InlineFieldRow label="出勤時間">
-                <InlineTextField
-                  value={profile.customerWorkStart}
-                  onSave={(v) => update("customerWorkStart", v)}
-                  ariaLabel="出勤時間"
+              <div className="flex gap-2">
+                <ConditionToggle
+                  label="WEB注文"
+                  pressed={profile.webOrder}
+                  onPressedChange={(v) => update("webOrder", v)}
                 />
-              </InlineFieldRow>
+                <ConditionToggle
+                  label="祝い花"
+                  pressed={profile.congratulatoryFlowers}
+                  onPressedChange={(v) => update("congratulatoryFlowers", v)}
+                />
+                <ConditionToggle
+                  label="代配"
+                  pressed={profile.proxyDelivery}
+                  onPressedChange={(v) => update("proxyDelivery", v)}
+                />
+              </div>
+              <Separator />
+              <div className="flex flex-col gap-2.5">
+                <TimeRange
+                  label="配送時間"
+                  startValue={profile.deliveryTimeStart}
+                  endValue={profile.deliveryTimeEnd}
+                  onSaveStart={(v) => update("deliveryTimeStart", v)}
+                  onSaveEnd={(v) => update("deliveryTimeEnd", v)}
+                />
+                <TimeRange
+                  label="出勤時間（平日）"
+                  startValue={profile.customerWorkStartWeekday}
+                  endValue={profile.customerWorkEndWeekday}
+                  onSaveStart={(v) => update("customerWorkStartWeekday", v)}
+                  onSaveEnd={(v) => update("customerWorkEndWeekday", v)}
+                />
+                <TimeRange
+                  label="出勤時間（土日）"
+                  startValue={profile.customerWorkStartWeekend}
+                  endValue={profile.customerWorkEndWeekend}
+                  onSaveStart={(v) => update("customerWorkStartWeekend", v)}
+                  onSaveEnd={(v) => update("customerWorkEndWeekend", v)}
+                />
+              </div>
+              <Separator />
+              <div className="flex flex-col gap-2.5">
+                <TimeRange
+                  label="営業時間 1"
+                  startValue={profile.businessHours1Start}
+                  endValue={profile.businessHours1End}
+                  onSaveStart={(v) => update("businessHours1Start", v)}
+                  onSaveEnd={(v) => update("businessHours1End", v)}
+                />
+                <TimeRange
+                  label="営業時間 2"
+                  startValue={profile.businessHours2Start}
+                  endValue={profile.businessHours2End}
+                  onSaveStart={(v) => update("businessHours2Start", v)}
+                  onSaveEnd={(v) => update("businessHours2End", v)}
+                />
+              </div>
             </CardContent>
           </Card>
 
+          {/* メモ */}
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle>{PANE2_SECTION.delivery}</CardTitle>
+              <CardTitle>{PANE2_SECTION.memo}</CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-col gap-2.5">
-              <InlineFieldRow label="現金or振込">
-                <InlineSelectField
-                  value={profile.paymentMethod}
-                  options={PAYMENT_OPTIONS}
-                  onSave={(v) => update("paymentMethod", v)}
-                  ariaLabel="支払方法"
-                />
-              </InlineFieldRow>
-              {profile.paymentMethod === "現金" && (
-                <InlineFieldRow label="集金担当">
-                  <InlineTextField
-                    value={profile.collectionPerson}
-                    onSave={(v) => update("collectionPerson", v)}
-                    ariaLabel="集金担当"
-                  />
-                </InlineFieldRow>
-              )}
-              <InlineFieldRow label="注文方法">
-                <InlineSelectField
-                  value={profile.orderMethod}
-                  options={ORDER_OPTIONS}
-                  onSave={(v) => update("orderMethod", v)}
-                  ariaLabel="注文方法"
-                />
-              </InlineFieldRow>
-              <InlineFieldRow label="初回納品日">
-                <InlineDateField
-                  value={profile.firstDeliveryDate}
-                  onSave={(v) => update("firstDeliveryDate", v)}
-                  ariaLabel="初回納品日"
-                />
-              </InlineFieldRow>
-              <InlineFieldRow label="たばこ">
-                <InlineSelectField
-                  value={profile.smokingPolicy}
-                  options={SMOKING_OPTIONS}
-                  onSave={(v) => update("smokingPolicy", v)}
-                  ariaLabel="たばこ"
-                />
-              </InlineFieldRow>
-              <InlineFieldRow label="休日">
-                <InlineTextField
-                  value={profile.holidays}
-                  onSave={(v) => update("holidays", v)}
-                  ariaLabel="休日"
-                />
-              </InlineFieldRow>
+            <CardContent>
+              <InlineTextareaField
+                value={profile.pane2Memo}
+                onSave={(v) => update("pane2Memo", v)}
+                ariaLabel="メモ"
+              />
             </CardContent>
           </Card>
         </div>

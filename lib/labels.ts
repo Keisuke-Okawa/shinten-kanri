@@ -30,8 +30,7 @@ export const TRAFFIC_LIGHT_LABELS: Record<TrafficLight, string> = {
 export const PANE2_SECTION = {
   basic: "基本情報",
   conditions: "条件設定",
-  delivery: "配送・営業",
-  vehicleReport: "号車報告書項目",
+  memo: "メモ",
 } as const;
 
 export const PANE3_SECTION = {

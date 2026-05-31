@@ -35,6 +35,16 @@ export function formatISODate(d: Date | undefined): string {
 }
 
 /**
+ * ISO 8601 文字列を「M月D日」形式の表示用文字列に変換する。
+ * 空 / 不正な値は空文字を返す。保存値は変更しない。
+ */
+export function formatDisplayDate(iso: string): string {
+  const d = parseISODate(iso);
+  if (!d) return "";
+  return `${d.getMonth() + 1}月${d.getDate()}日`;
+}
+
+/**
  * 生年月日から年齢を派生計算し、「N 歳」形式で返す。
  * 空 / 不正な birthday は空文字を返す（UI 側で「未表示」になる）。
  *
