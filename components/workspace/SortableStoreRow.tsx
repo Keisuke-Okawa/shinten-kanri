@@ -13,9 +13,9 @@ import {
 } from "@/lib/schema";
 
 const TRAFFIC_DOT_CLASS: Record<TrafficLight, string> = {
-  green: "bg-chart-2",
-  yellow: "bg-chart-3",
-  red: "bg-destructive",
+  green: "bg-traffic-green",
+  yellow: "bg-traffic-yellow",
+  red: "bg-traffic-red",
 };
 
 function formatOpenDate(date: string): string {
@@ -93,7 +93,7 @@ export function SortableStoreRow({
           </span>
           <span
             className={cn(
-              "size-2 shrink-0 rounded-full",
+              "size-3 shrink-0 rounded-full",
               TRAFFIC_DOT_CLASS[store.storeTrafficLight],
             )}
             aria-hidden

@@ -242,10 +242,10 @@ export function TrafficLightDot({
   return (
     <span
       className={cn(
-        "inline-block size-2.5 shrink-0 rounded-full",
-        light === "green" && "bg-chart-2",
-        light === "yellow" && "bg-chart-3",
-        light === "red" && "bg-destructive",
+        "inline-block size-[15px] shrink-0 rounded-full",
+        light === "green" && "bg-traffic-green",
+        light === "yellow" && "bg-traffic-yellow",
+        light === "red" && "bg-traffic-red",
         className,
       )}
       aria-hidden="true"

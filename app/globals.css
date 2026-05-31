@@ -77,9 +77,16 @@
   --shadow-opacity: var(--shadow-opacity);
   --color-shadow-color: var(--shadow-color);
   --color-destructive-foreground: var(--destructive-foreground);
+  /* 信号機インジケーター専用トークン */
+  --color-traffic-red: var(--traffic-red);
+  --color-traffic-yellow: var(--traffic-yellow);
+  --color-traffic-green: var(--traffic-green);
 }
 
 :root {
+  --traffic-red: oklch(0.55 0.26 25);
+  --traffic-yellow: oklch(0.87 0.20 90);
+  --traffic-green: oklch(0.62 0.22 145);
   --background: oklch(0.9701 0.0041 91.4464);
   --foreground: oklch(0.2354 0.0019 286.2536);
   --card: oklch(0.9972 0.0028 84.5587);
@@ -144,6 +151,9 @@
 }
 
 .dark {
+  --traffic-red: oklch(0.60 0.26 25);
+  --traffic-yellow: oklch(0.90 0.20 90);
+  --traffic-green: oklch(0.67 0.22 145);
   --background: oklch(0.2252 0.0049 248.0473);
   --foreground: oklch(0.9168 0.0035 67.7802);
   --card: oklch(0.2668 0.0071 248.094);
