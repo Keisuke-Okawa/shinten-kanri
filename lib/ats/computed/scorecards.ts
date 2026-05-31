@@ -20,7 +20,7 @@ import {
   type StageStatus,
   AXIS_ORDER,
   STAGE_ORDER,
-} from "@/lib/schema";
+} from "@/lib/ats/schema";
 
 /**
  * 「最後に done 状態となった scorecard」を返す。done が存在しない場合は undefined。

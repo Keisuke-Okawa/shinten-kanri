@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 
-import { type Department } from "@/lib/schema";
-import { DeleteConfirmDialog } from "@/components/workspace/DeleteConfirmDialog";
+import { type Department } from "@/lib/ats/schema";
+import { DeleteConfirmDialog } from "@/components/workspace-ats/DeleteConfirmDialog";
 import { Button } from "@/components/ui/button";
 import {
   DialogContent,

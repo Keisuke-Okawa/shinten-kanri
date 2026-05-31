@@ -1,56 +1,54 @@
-import { type Profile, type StageKey, type Scorecard } from "@/lib/schema";
-import { STAGE_LABELS } from "@/lib/labels";
-
 /**
- * 未作成ステージをクリックした時に Workspace が自動生成するための最小 Scorecard。
- * 全フィールド空（`deriveStageStatus` で pending 派生）。Pane 4 Mode 2 で inline edit すれば
- * 面接官アサインや日程設定ができる。
+ * 店舗・タスクの最小データ生成ヘルパー。
+ * 新規追加時のデフォルト値をここに集約する。
  */
-export function createMinimalScorecard(stage: StageKey): Scorecard {
+
+import { type StoreProfile, type Task } from "@/lib/schema";
+
+/** 新規店舗プロフィールのデフォルト（名前以外は空） */
+export function createMinimalStoreProfile(name: string): StoreProfile {
   return {
-    stage,
-    label: STAGE_LABELS[stage],
-    date: "",
-    format: "",
-    interviewer: "",
-    axisScores: {
-      achievements: null,
-      thinkingAbility: null,
-      communication: null,
-      cultureFit: null,
-    },
-    attachments: [],
+    customerCode: "",
+    name,
+    businessType: "",
+    address: "",
+    phone: "",
+    managerName: "",
+    paymentMethod: "振込",
+    collectionPerson: "",
+    deliveryTimeStart: "",
+    deliveryTimeEnd: "",
+    hasLunch: false,
+    orderMethod: "WEB",
+    keyCustody: false,
+    holidays: "",
+    miscCollection: false,
+    miscCollectionStart: "",
+    firstDeliveryDate: "",
+    openDate: "",
+    smokingPolicy: "禁煙",
+    deliveryNotes: "",
+    specialNotes: "",
+    invoiceType: "納品書",
+    serverInstallDate: "",
+    accountChangeEmptyReturn: false,
+    elevatorAvailable: false,
+    dedicatedEntrance: false,
+    notesAndAttachments: "",
+    webOrder: false,
+    proxyDelivery: false,
+    congratulatoryFlowers: false,
+    customerWorkStart: "",
   };
 }
 
-/**
- * c1 / c3 / c4 / c5 / c6 など「c2 以外の候補者」用の最小 Profile 生成ヘルパー。
- * ADR-0014 で Profile が 12 フィールド最小構成になり、avatar 頭文字は
- * 呼び出し側で `name[0]` 派生に統一されたため、`initial` 引数は削除済み。
- * 氏名以外は空文字に揃え、Pane 3 / Pane 4 では空欄として可視化される。
- *
- * `addCandidate`（Workspace 本体）からも参照されるため export する。
- */
-export function createMinimalProfile(name: string): Profile {
+/** 新規タスクのデフォルト */
+export function createMinimalTask(id: string, name: string): Task {
   return {
-    // プロフィール (3)
+    id,
     name,
-    birthday: "",
-    source: "",
-
-    // 連絡先 (3)
-    email: "",
-    phone: "",
-    address: "",
-
-    // 選考状況 (4)
-    recruiter: "",
-    desiredSalaryMin: "",
-    desiredSalaryMax: "",
-    availableStartDate: "",
-
-    // 読み物 (2)
-    careerText: "",
-    motivationFull: "",
+    kind: "standard",
+    status: "notStarted",
+    dueDate: "",
   };
 }

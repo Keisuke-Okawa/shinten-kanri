@@ -6,7 +6,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, MoreHorizontal, Star } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { type CandidateRow, type StageKey } from "@/lib/schema";
+import { type CandidateRow, type StageKey } from "@/lib/ats/schema";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {

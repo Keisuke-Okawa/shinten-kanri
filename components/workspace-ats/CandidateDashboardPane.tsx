@@ -34,13 +34,13 @@ import {
   type Scorecard,
   type SelectedDetail,
   STAGE_ORDER,
-} from "@/lib/schema";
-import { STAGE_LABELS, PANE3_SECTION, PANE4_SECTION_IDS } from "@/lib/labels";
+} from "@/lib/ats/schema";
+import { STAGE_LABELS, PANE3_SECTION, PANE4_SECTION_IDS } from "@/lib/ats/labels";
 import {
   getScorecardsAverageScore,
   deriveStageStatus,
-} from "@/lib/computed/scorecards";
-import { calculateAge } from "@/lib/computed/profile";
+} from "@/lib/ats/computed/scorecards";
+import { calculateAge } from "@/lib/ats/computed/profile";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {

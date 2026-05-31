@@ -19,7 +19,7 @@
 import { useEffect, useState } from "react";
 
 import { cn } from "@/lib/utils";
-import { Pane4Toggle } from "@/components/workspace/Pane4Toggle";
+import { Pane4Toggle } from "@/components/workspace-ats/Pane4Toggle";
 
 import {
   type AxisKey,
@@ -27,9 +27,9 @@ import {
   type Scorecard,
   type SelectedDetail,
   AXIS_ORDER,
-} from "@/lib/schema";
-import { EVALUATION_AXIS, PANE4_SECTION_IDS } from "@/lib/labels";
-import { createMinimalScorecard } from "@/lib/data/factories";
+} from "@/lib/ats/schema";
+import { EVALUATION_AXIS, PANE4_SECTION_IDS } from "@/lib/ats/labels";
+import { createMinimalScorecard } from "@/lib/ats/data/factories";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -40,9 +40,9 @@ import {
   InlineFieldRow,
   type ComboOption,
 } from "@/components/primitives";
-import { Pane4Section } from "@/components/workspace/Pane4Section";
-import { AxisScoreRow } from "@/components/workspace/CandidateDashboardPane";
-import { AttachmentList } from "@/components/workspace/AttachmentList";
+import { Pane4Section } from "@/components/workspace-ats/Pane4Section";
+import { AxisScoreRow } from "@/components/workspace-ats/CandidateDashboardPane";
+import { AttachmentList } from "@/components/workspace-ats/AttachmentList";
 
 // ===== Pane 4 内部型（ファイル外には出さない） =====
 

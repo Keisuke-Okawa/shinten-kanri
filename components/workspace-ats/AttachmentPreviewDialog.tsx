@@ -16,7 +16,7 @@
 
 import { Download } from "lucide-react";
 
-import { type Attachment } from "@/lib/schema";
+import { type Attachment } from "@/lib/ats/schema";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,

@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { MoreHorizontal, Plus, Trash2 } from "lucide-react";
 
-import { type Department } from "@/lib/schema";
-import { DeleteConfirmDialog } from "@/components/workspace/DeleteConfirmDialog";
+import { type Department } from "@/lib/ats/schema";
+import { DeleteConfirmDialog } from "@/components/workspace-ats/DeleteConfirmDialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,8 +25,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Pane1Toggle } from "@/components/workspace/Pane1Toggle";
-import { AddItemDialog } from "@/components/workspace/AddItemDialog";
+import { Pane1Toggle } from "@/components/workspace-ats/Pane1Toggle";
+import { AddItemDialog } from "@/components/workspace-ats/AddItemDialog";
 
 type PositionPaneProps = {
   workspaceName: string;

@@ -28,9 +28,9 @@
 import { useState } from "react";
 import { Download, FileText } from "lucide-react";
 
-import { type Attachment } from "@/lib/schema";
+import { type Attachment } from "@/lib/ats/schema";
 import { Separator } from "@/components/ui/separator";
-import { AttachmentPreviewDialog } from "@/components/workspace/AttachmentPreviewDialog";
+import { AttachmentPreviewDialog } from "@/components/workspace-ats/AttachmentPreviewDialog";
 
 export function AttachmentList({ items }: { items: Attachment[] }) {
   const [openItem, setOpenItem] = useState<Attachment | null>(null);
