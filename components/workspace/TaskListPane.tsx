@@ -49,18 +49,7 @@ export function TaskListPane({
 }: TaskListPaneProps) {
   return (
     <section className="min-w-0 flex-1 bg-canvas">
-      <header className="flex h-12 shrink-0 items-center border-b border-border bg-background px-6">
-        <div className="flex flex-col gap-0.5">
-          <h2 className="text-sm font-semibold text-foreground">
-            {PANE3_SECTION.taskList}
-          </h2>
-          <p className="text-xs text-muted-foreground">
-            {PANE3_SECTION.taskListDescription}
-          </p>
-        </div>
-      </header>
-
-      <ScrollArea className="h-[calc(100%-3rem)]">
+      <ScrollArea className="h-full">
         <div className="mx-auto flex max-w-3xl flex-col gap-2 px-6 py-6">
           {tasks.map((task) => {
             const active = task.id === selectedTaskId;

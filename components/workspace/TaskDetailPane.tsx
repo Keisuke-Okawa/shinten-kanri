@@ -324,14 +324,14 @@ export function TaskDetailPane({
     >
       {pane4Open && task ? (
         <>
-          <header className="flex h-12 shrink-0 items-center gap-2 border-b border-border px-3">
-            <h2 className="flex-1 truncate text-sm font-semibold text-foreground">
+          <div className="flex shrink-0 items-center gap-2 px-3 pt-2.5 pb-1">
+            <span className="flex-1 truncate text-sm font-semibold text-foreground">
               {task.name}
-            </h2>
+            </span>
             <Pane4Toggle open={pane4Open} onToggle={onTogglePane4} />
-          </header>
+          </div>
           <ScrollArea className="min-h-0 flex-1">
-            <div className="p-4">
+            <div className="p-4 pt-2">
               {task.kind === "vehicleReport" ? (
                 <VehicleReportDetail
                   profile={profile}
@@ -344,7 +344,7 @@ export function TaskDetailPane({
           </ScrollArea>
         </>
       ) : (
-        <div className="flex h-12 shrink-0 items-center justify-center border-b border-border">
+        <div className="flex shrink-0 items-center justify-center pt-2">
           <Pane4Toggle open={pane4Open} onToggle={onTogglePane4} />
         </div>
       )}
