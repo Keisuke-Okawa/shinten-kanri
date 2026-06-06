@@ -20,17 +20,78 @@ import { Toggle } from "@/components/ui/toggle";
 import {
   InlineTextField,
   InlineDateField,
-  InlineSelectField,
   InlineTextareaField,
   InlineFieldRow,
 } from "@/components/primitives";
 
-const PAYMENT_OPTIONS = ["現金", "振込"] as const;
-const SMOKING_OPTIONS = ["禁煙", "分煙", "喫煙"] as const;
-const YES_NO_OPTIONS = ["有", "無"] as const;
-
 const TASK_STATUS_KEYS = ["notStarted", "inProgress", "completed"] as const;
 type EditableTaskStatusKey = (typeof TASK_STATUS_KEYS)[number];
+
+/** 号車報告書のラベル幅。入力欄・トグルの左端を縦一列に揃える */
+const VR_FIELD_LABEL_WIDTH = "w-28";
+
+function OptionToggleGroup<T extends string>({
+  value,
+  options,
+  onChange,
+  ariaLabelPrefix,
+}: {
+  value: T | "";
+  options: readonly T[];
+  onChange: (v: T | "") => void;
+  ariaLabelPrefix?: string;
+}) {
+  return (
+    <div className="flex gap-1.5">
+      {options.map((opt) => (
+        <Toggle
+          key={opt}
+          pressed={value === opt}
+          onPressedChange={(pressed) => onChange(pressed ? opt : "")}
+          variant="bordered"
+          size="sm"
+          aria-label={ariaLabelPrefix ? `${ariaLabelPrefix} ${opt}` : opt}
+          className="px-3"
+        >
+          {opt}
+        </Toggle>
+      ))}
+    </div>
+  );
+}
+
+function YesNoToggleGroup({
+  value,
+  onChange,
+  ariaLabelPrefix,
+}: {
+  value: boolean;
+  onChange: (v: boolean) => void;
+  ariaLabelPrefix: string;
+}) {
+  return (
+    <div className="flex gap-1.5">
+      {(["あり", "なし"] as const).map((opt) => {
+        const isYes = opt === "あり";
+        return (
+          <Toggle
+            key={opt}
+            pressed={value === isYes}
+            onPressedChange={(pressed) => {
+              if (pressed) onChange(isYes);
+            }}
+            variant="bordered"
+            size="sm"
+            aria-label={`${ariaLabelPrefix} ${opt}`}
+            className="px-3"
+          >
+            {opt}
+          </Toggle>
+        );
+      })}
+    </div>
+  );
+}
 
 function StatusToggleGroup({
   value,
@@ -192,10 +253,14 @@ function StandardTaskDetail({
 }
 
 function VehicleReportDetail({
+  task,
   profile,
+  onUpdateTask,
   onUpdateProfile,
 }: {
+  task: Task;
   profile: StoreProfile;
+  onUpdateTask: (updates: Partial<Task>) => void;
   onUpdateProfile: (updates: Partial<StoreProfile>) => void;
 }) {
   const update = <K extends keyof StoreProfile>(
@@ -203,63 +268,95 @@ function VehicleReportDetail({
     value: StoreProfile[K],
   ) => onUpdateProfile({ [key]: value });
 
-  const boolToLabel = (v: boolean) => (v ? "有" : "無");
-  const labelToBool = (v: string) => v === "有";
-
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between gap-2">
+    <div className="flex flex-col gap-1">
+      <div className="flex items-center justify-between gap-2 px-5 py-3">
         <Badge variant="outline">号車報告書</Badge>
         <span className="text-xs text-muted-foreground">
           全項目入力で報告書完成
         </span>
       </div>
 
+      <Pane4Section id="vr-status" title="進行状態">
+        <StatusToggleGroup
+          value={task.status}
+          onChange={(v) => onUpdateTask({ status: v })}
+        />
+      </Pane4Section>
+
       <Pane4Section id="vr-basic" title="基本情報">
         <dl className="flex flex-col gap-2.5 text-sm">
-          <InlineFieldRow label="得意先コード">
+          <InlineFieldRow
+            label="得意先CD"
+            direction="horizontal"
+            labelWidth={VR_FIELD_LABEL_WIDTH}
+          >
             <InlineTextField
               value={profile.customerCode}
               onSave={(v) => update("customerCode", v)}
-              ariaLabel="得意先コード"
+              ariaLabel="得意先CD"
             />
           </InlineFieldRow>
-          <InlineFieldRow label="店名">
+          <InlineFieldRow
+            label="店名"
+            direction="horizontal"
+            labelWidth={VR_FIELD_LABEL_WIDTH}
+          >
             <InlineTextField
               value={profile.name}
               onSave={(v) => update("name", v)}
               ariaLabel="店名"
             />
           </InlineFieldRow>
-          <InlineFieldRow label="業態">
+          <InlineFieldRow
+            label="業態"
+            direction="horizontal"
+            labelWidth={VR_FIELD_LABEL_WIDTH}
+          >
             <InlineTextField
               value={profile.businessType}
               onSave={(v) => update("businessType", v)}
               ariaLabel="業態"
             />
           </InlineFieldRow>
-          <InlineFieldRow label="住所">
+          <InlineFieldRow
+            label="住所"
+            direction="horizontal"
+            labelWidth={VR_FIELD_LABEL_WIDTH}
+          >
             <InlineTextField
               value={profile.address}
               onSave={(v) => update("address", v)}
               ariaLabel="住所"
             />
           </InlineFieldRow>
-          <InlineFieldRow label="電話番号">
+          <InlineFieldRow
+            label="電話番号"
+            direction="horizontal"
+            labelWidth={VR_FIELD_LABEL_WIDTH}
+          >
             <InlineTextField
               value={profile.phone}
               onSave={(v) => update("phone", v)}
               ariaLabel="電話番号"
             />
           </InlineFieldRow>
-          <InlineFieldRow label="店長">
+          <InlineFieldRow
+            label="店長"
+            direction="horizontal"
+            labelWidth={VR_FIELD_LABEL_WIDTH}
+          >
             <InlineTextField
               value={profile.managerName}
               onSave={(v) => update("managerName", v)}
               ariaLabel="店長"
             />
           </InlineFieldRow>
-          <InlineFieldRow label="オープン日">
+          <InlineFieldRow
+            label="オープン日"
+            direction="horizontal"
+            labelWidth={VR_FIELD_LABEL_WIDTH}
+          >
             <InlineDateField
               value={profile.openDate}
               onSave={(v) => update("openDate", v)}
@@ -271,16 +368,24 @@ function VehicleReportDetail({
 
       <Pane4Section id="vr-delivery" title="配送・営業">
         <dl className="flex flex-col gap-2.5 text-sm">
-          <InlineFieldRow label="現金or振込">
-            <InlineSelectField
+          <InlineFieldRow
+            label="現金or振込"
+            direction="horizontal"
+            labelWidth={VR_FIELD_LABEL_WIDTH}
+          >
+            <OptionToggleGroup
               value={profile.paymentMethod}
-              options={PAYMENT_OPTIONS}
-              onSave={(v) => update("paymentMethod", v)}
-              ariaLabel="支払方法"
+              options={["現金", "振込"] as const}
+              onChange={(v) => update("paymentMethod", v)}
+              ariaLabelPrefix="支払方法"
             />
           </InlineFieldRow>
           {profile.paymentMethod === "現金" && (
-            <InlineFieldRow label="集金担当">
+            <InlineFieldRow
+              label="集金担当"
+              direction="horizontal"
+              labelWidth={VR_FIELD_LABEL_WIDTH}
+            >
               <InlineTextField
                 value={profile.collectionPerson}
                 onSave={(v) => update("collectionPerson", v)}
@@ -288,7 +393,11 @@ function VehicleReportDetail({
               />
             </InlineFieldRow>
           )}
-          <InlineFieldRow label="納品時間">
+          <InlineFieldRow
+            label="納品時間"
+            direction="horizontal"
+            labelWidth={VR_FIELD_LABEL_WIDTH}
+          >
             <div className="flex items-center gap-1.5">
               <InlineTextField
                 value={profile.deliveryTimeStart}
@@ -303,49 +412,71 @@ function VehicleReportDetail({
               />
             </div>
           </InlineFieldRow>
-          <InlineFieldRow label="ランチ">
-            <InlineSelectField
-              value={boolToLabel(profile.hasLunch)}
-              options={YES_NO_OPTIONS}
-              onSave={(v) => update("hasLunch", labelToBool(v))}
-              ariaLabel="ランチ"
+          <InlineFieldRow
+            label="ランチ"
+            direction="horizontal"
+            labelWidth={VR_FIELD_LABEL_WIDTH}
+          >
+            <YesNoToggleGroup
+              value={profile.hasLunch}
+              onChange={(v) => update("hasLunch", v)}
+              ariaLabelPrefix="ランチ"
             />
           </InlineFieldRow>
-          <InlineFieldRow label="注文方法">
+          <InlineFieldRow
+            label="注文方法"
+            direction="horizontal"
+            labelWidth={VR_FIELD_LABEL_WIDTH}
+          >
             <InlineTextField
               value={profile.orderMethod}
               onSave={(v) => update("orderMethod", v)}
               ariaLabel="注文方法"
             />
           </InlineFieldRow>
-          <InlineFieldRow label="鍵預かり">
-            <InlineSelectField
-              value={boolToLabel(profile.keyCustody)}
-              options={YES_NO_OPTIONS}
-              onSave={(v) => update("keyCustody", labelToBool(v))}
-              ariaLabel="鍵預かり"
+          <InlineFieldRow
+            label="鍵預かり"
+            direction="horizontal"
+            labelWidth={VR_FIELD_LABEL_WIDTH}
+          >
+            <YesNoToggleGroup
+              value={profile.keyCustody}
+              onChange={(v) => update("keyCustody", v)}
+              ariaLabelPrefix="鍵預かり"
             />
           </InlineFieldRow>
-          <InlineFieldRow label="休日">
+          <InlineFieldRow
+            label="休日"
+            direction="horizontal"
+            labelWidth={VR_FIELD_LABEL_WIDTH}
+          >
             <InlineTextField
               value={profile.holidays}
               onSave={(v) => update("holidays", v)}
               ariaLabel="休日"
             />
           </InlineFieldRow>
-          <InlineFieldRow label="初回納品日">
+          <InlineFieldRow
+            label="初回納品日"
+            direction="horizontal"
+            labelWidth={VR_FIELD_LABEL_WIDTH}
+          >
             <InlineDateField
               value={profile.firstDeliveryDate}
               onSave={(v) => update("firstDeliveryDate", v)}
               ariaLabel="初回納品日"
             />
           </InlineFieldRow>
-          <InlineFieldRow label="たばこ">
-            <InlineSelectField
+          <InlineFieldRow
+            label="たばこ"
+            direction="horizontal"
+            labelWidth={VR_FIELD_LABEL_WIDTH}
+          >
+            <OptionToggleGroup
               value={profile.smokingPolicy}
-              options={SMOKING_OPTIONS}
-              onSave={(v) => update("smokingPolicy", v)}
-              ariaLabel="たばこ"
+              options={["禁煙", "分煙", "喫煙"] as const}
+              onChange={(v) => update("smokingPolicy", v)}
+              ariaLabelPrefix="たばこ"
             />
           </InlineFieldRow>
         </dl>
@@ -353,34 +484,48 @@ function VehicleReportDetail({
 
       <Pane4Section id="vr-other" title="その他">
         <dl className="flex flex-col gap-2.5 text-sm">
-          <InlineFieldRow label="伝票の種類">
+          <InlineFieldRow
+            label="伝票の種類"
+            direction="horizontal"
+            labelWidth={VR_FIELD_LABEL_WIDTH}
+          >
             <InlineTextField
               value={profile.invoiceType}
               onSave={(v) => update("invoiceType", v)}
               ariaLabel="伝票の種類"
             />
           </InlineFieldRow>
-          <InlineFieldRow label="サーバー設置日">
+          <InlineFieldRow
+            label="サーバー設置日"
+            direction="horizontal"
+            labelWidth={VR_FIELD_LABEL_WIDTH}
+          >
             <InlineDateField
               value={profile.serverInstallDate}
               onSave={(v) => update("serverInstallDate", v)}
               ariaLabel="サーバー設置日"
             />
           </InlineFieldRow>
-          <InlineFieldRow label="エレベーター">
-            <InlineSelectField
-              value={boolToLabel(profile.elevatorAvailable)}
-              options={YES_NO_OPTIONS}
-              onSave={(v) => update("elevatorAvailable", labelToBool(v))}
-              ariaLabel="エレベーター"
+          <InlineFieldRow
+            label="エレベーター"
+            direction="horizontal"
+            labelWidth={VR_FIELD_LABEL_WIDTH}
+          >
+            <YesNoToggleGroup
+              value={profile.elevatorAvailable}
+              onChange={(v) => update("elevatorAvailable", v)}
+              ariaLabelPrefix="エレベーター"
             />
           </InlineFieldRow>
-          <InlineFieldRow label="専用搬入口">
-            <InlineSelectField
-              value={boolToLabel(profile.dedicatedEntrance)}
-              options={YES_NO_OPTIONS}
-              onSave={(v) => update("dedicatedEntrance", labelToBool(v))}
-              ariaLabel="専用搬入口"
+          <InlineFieldRow
+            label="専用搬入口"
+            direction="horizontal"
+            labelWidth={VR_FIELD_LABEL_WIDTH}
+          >
+            <YesNoToggleGroup
+              value={profile.dedicatedEntrance}
+              onChange={(v) => update("dedicatedEntrance", v)}
+              ariaLabelPrefix="専用搬入口"
             />
           </InlineFieldRow>
         </dl>
@@ -433,7 +578,9 @@ export function TaskDetailPane({
             <div className="p-4 pt-2">
               {task.kind === "vehicleReport" ? (
                 <VehicleReportDetail
+                  task={task}
                   profile={profile}
+                  onUpdateTask={onUpdateTask}
                   onUpdateProfile={onUpdateProfile}
                 />
               ) : (

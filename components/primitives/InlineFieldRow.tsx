@@ -18,6 +18,8 @@
  * 採用条件カード、Pane 4 モード 2「基本情報」で使う。
  */
 
+import { cn } from "@/lib/utils";
+
 export type InlineFieldRowProps = {
   /** ラベルテキスト */
   label: string;
@@ -25,13 +27,27 @@ export type InlineFieldRowProps = {
   children: React.ReactNode;
   /** レイアウト方向。"horizontal" でラベルと入力欄を同一行に並べる（デフォルト "vertical"） */
   direction?: "vertical" | "horizontal";
+  /** horizontal 時のラベル幅クラス（入力欄・トグルの左端を揃える） */
+  labelWidth?: string;
 };
 
-export function InlineFieldRow({ label, children, direction = "vertical" }: InlineFieldRowProps) {
+export function InlineFieldRow({
+  label,
+  children,
+  direction = "vertical",
+  labelWidth,
+}: InlineFieldRowProps) {
   if (direction === "horizontal") {
     return (
       <div className="flex items-center gap-2">
-        <dt className="shrink-0 whitespace-nowrap text-sm text-muted-foreground">{label}</dt>
+        <dt
+          className={cn(
+            "shrink-0 whitespace-nowrap text-sm text-muted-foreground",
+            labelWidth,
+          )}
+        >
+          {label}
+        </dt>
         <dd className="min-w-0 flex-1">{children}</dd>
       </div>
     );
