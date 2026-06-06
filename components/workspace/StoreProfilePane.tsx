@@ -159,35 +159,31 @@ export function StoreProfilePane({
                 </InlineFieldRow>
               </div>
               <Separator />
-              <div className="grid grid-cols-2 gap-x-4 gap-y-2.5">
-                <InlineFieldRow label="席数" direction="horizontal">
-                  <InlineTextField
-                    value={profile.seatCount}
-                    onSave={(v) => update("seatCount", v)}
-                    ariaLabel="席数"
-                  />
-                </InlineFieldRow>
-                <InlineFieldRow label="客単価" direction="horizontal">
-                  <InlineTextField
-                    value={profile.avgSpendPerCustomer}
-                    onSave={(v) => update("avgSpendPerCustomer", v)}
-                    ariaLabel="客単価"
-                  />
-                </InlineFieldRow>
-                <InlineFieldRow label="休日" direction="horizontal">
-                  <InlineTextField
-                    value={profile.holidays}
-                    onSave={(v) => update("holidays", v)}
-                    ariaLabel="休日"
-                  />
-                </InlineFieldRow>
-                <InlineFieldRow label="売上見込" direction="horizontal">
-                  <InlineTextField
-                    value={profile.expectedSales}
-                    onSave={(v) => update("expectedSales", v)}
-                    ariaLabel="売上見込"
-                  />
-                </InlineFieldRow>
+              <div className="grid grid-cols-[auto_1fr_auto_1fr] items-center gap-x-2 gap-y-2.5 text-sm">
+                <span className="shrink-0 whitespace-nowrap text-muted-foreground">席数</span>
+                <InlineTextField
+                  value={profile.seatCount}
+                  onSave={(v) => update("seatCount", v)}
+                  ariaLabel="席数"
+                />
+                <span className="shrink-0 whitespace-nowrap text-muted-foreground">客単価</span>
+                <InlineTextField
+                  value={profile.avgSpendPerCustomer}
+                  onSave={(v) => update("avgSpendPerCustomer", v)}
+                  ariaLabel="客単価"
+                />
+                <span className="shrink-0 whitespace-nowrap text-muted-foreground">休日</span>
+                <InlineTextField
+                  value={profile.holidays}
+                  onSave={(v) => update("holidays", v)}
+                  ariaLabel="休日"
+                />
+                <span className="shrink-0 whitespace-nowrap text-muted-foreground">売上見込</span>
+                <InlineTextField
+                  value={profile.expectedSales}
+                  onSave={(v) => update("expectedSales", v)}
+                  ariaLabel="売上見込"
+                />
               </div>
             </CardContent>
           </Card>
