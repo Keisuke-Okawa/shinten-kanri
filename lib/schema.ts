@@ -56,7 +56,6 @@ export const storeProfileSchema = z.object({
   deliveryTimeEnd: z.string(),
   hasLunch: z.boolean(),
   orderMethod: z.string(),
-  keyCustody: z.boolean(),
   holidays: z.string(),
   miscCollection: z.boolean(),
   miscCollectionStart: z.string(),
@@ -77,18 +76,17 @@ export const storeProfileSchema = z.object({
   expectedSales: z.string(),
   // 条件付きタスク連動トグル
   webOrder: z.boolean(),
-  proxyDelivery: z.boolean(),
+  sponsorship: z.boolean(),
+  newStore: z.boolean(),
+  miscBottle: z.boolean(),
+  keyCustody: z.boolean(),
   congratulatoryFlowers: z.boolean(),
+  proxyDelivery: z.boolean(),
   customerWorkStartWeekday: z.string(),
   customerWorkEndWeekday: z.string(),
   customerWorkStartWeekend: z.string(),
   customerWorkEndWeekend: z.string(),
-  businessHours1Start: z.string(),
-  businessHours1End: z.string(),
-  businessHours2Start: z.string(),
-  businessHours2End: z.string(),
   pane2Memo: z.string(),
-  miscBottle: z.boolean(),
 });
 export type StoreProfile = z.infer<typeof storeProfileSchema>;
 

@@ -164,32 +164,48 @@ export function StoreProfilePane({
               <CardTitle>{PANE2_SECTION.conditions}</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-3">
-              <div className="flex flex-wrap gap-2">
-                <ConditionToggle
-                  label="WEB"
-                  pressed={profile.webOrder}
-                  onPressedChange={(v) => update("webOrder", v)}
-                />
-                <ConditionToggle
-                  label="雑瓶"
-                  pressed={profile.miscBottle}
-                  onPressedChange={(v) => update("miscBottle", v)}
-                />
-                <ConditionToggle
-                  label="鍵預かり"
-                  pressed={profile.keyCustody}
-                  onPressedChange={(v) => update("keyCustody", v)}
-                />
-                <ConditionToggle
-                  label="祝花"
-                  pressed={profile.congratulatoryFlowers}
-                  onPressedChange={(v) => update("congratulatoryFlowers", v)}
-                />
-                <ConditionToggle
-                  label="代配"
-                  pressed={profile.proxyDelivery}
-                  onPressedChange={(v) => update("proxyDelivery", v)}
-                />
+              <div className="flex flex-col gap-2 text-sm">
+                <div className="flex items-center gap-2">
+                  <span className="shrink-0 text-muted-foreground">本部</span>
+                  <ConditionToggle
+                    label="WEB"
+                    pressed={profile.webOrder}
+                    onPressedChange={(v) => update("webOrder", v)}
+                  />
+                  <ConditionToggle
+                    label="協賛"
+                    pressed={profile.sponsorship}
+                    onPressedChange={(v) => update("sponsorship", v)}
+                  />
+                  <ConditionToggle
+                    label="新規"
+                    pressed={profile.newStore}
+                    onPressedChange={(v) => update("newStore", v)}
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="shrink-0 text-muted-foreground">新店</span>
+                  <ConditionToggle
+                    label="雑瓶"
+                    pressed={profile.miscBottle}
+                    onPressedChange={(v) => update("miscBottle", v)}
+                  />
+                  <ConditionToggle
+                    label="鍵預かり"
+                    pressed={profile.keyCustody}
+                    onPressedChange={(v) => update("keyCustody", v)}
+                  />
+                  <ConditionToggle
+                    label="祝花"
+                    pressed={profile.congratulatoryFlowers}
+                    onPressedChange={(v) => update("congratulatoryFlowers", v)}
+                  />
+                  <ConditionToggle
+                    label="代配"
+                    pressed={profile.proxyDelivery}
+                    onPressedChange={(v) => update("proxyDelivery", v)}
+                  />
+                </div>
               </div>
               <Separator />
               <div className="grid grid-cols-[auto_auto_5rem_auto_5rem] items-center gap-x-2 gap-y-2.5 text-sm">
@@ -220,35 +236,6 @@ export function StoreProfilePane({
                   value={profile.customerWorkStartWeekend}
                   onSave={(v) => update("customerWorkStartWeekend", v)}
                   ariaLabel="出勤時間（土日）"
-                />
-                <Separator className="col-span-5 my-0.5" />
-                {/* 営業時間 1 */}
-                <span className="shrink-0 text-muted-foreground">営業時間 1</span>
-                <span />
-                <InlineTimeField
-                  value={profile.businessHours1Start}
-                  onSave={(v) => update("businessHours1Start", v)}
-                  ariaLabel="営業時間1開始"
-                />
-                <span className="text-center text-muted-foreground">〜</span>
-                <InlineTimeField
-                  value={profile.businessHours1End}
-                  onSave={(v) => update("businessHours1End", v)}
-                  ariaLabel="営業時間1終了"
-                />
-                {/* 営業時間 2 */}
-                <span className="shrink-0 text-muted-foreground">営業時間 2</span>
-                <span />
-                <InlineTimeField
-                  value={profile.businessHours2Start}
-                  onSave={(v) => update("businessHours2Start", v)}
-                  ariaLabel="営業時間2開始"
-                />
-                <span className="text-center text-muted-foreground">〜</span>
-                <InlineTimeField
-                  value={profile.businessHours2End}
-                  onSave={(v) => update("businessHours2End", v)}
-                  ariaLabel="営業時間2終了"
                 />
               </div>
             </CardContent>
