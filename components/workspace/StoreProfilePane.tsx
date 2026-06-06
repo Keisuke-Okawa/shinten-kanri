@@ -155,32 +155,36 @@ export function StoreProfilePane({
               </div>
               <Separator />
               <div className="grid grid-cols-2 gap-x-4 gap-y-2.5">
-                <InlineFieldRow label="オープン日">
+                <InlineFieldRow label="オープン" direction="horizontal">
                   <InlineDateField
                     value={profile.openDate}
                     onSave={(v) => update("openDate", v)}
                     ariaLabel="オープン日"
+                    freeText
                   />
                 </InlineFieldRow>
-                <InlineFieldRow label="初回納品">
+                <InlineFieldRow label="初回納品" direction="horizontal">
                   <InlineDateField
                     value={profile.firstDeliveryDate}
                     onSave={(v) => update("firstDeliveryDate", v)}
                     ariaLabel="初回納品日"
+                    freeText
                   />
                 </InlineFieldRow>
-                <InlineFieldRow label="サーバー設置">
+                <InlineFieldRow label="サーバー" direction="horizontal">
                   <InlineDateField
                     value={profile.serverInstallDate}
                     onSave={(v) => update("serverInstallDate", v)}
                     ariaLabel="サーバー設置日"
+                    freeText
                   />
                 </InlineFieldRow>
-                <InlineFieldRow label="引き渡し日">
+                <InlineFieldRow label="引き渡し" direction="horizontal">
                   <InlineDateField
                     value={profile.handoverDate}
                     onSave={(v) => update("handoverDate", v)}
                     ariaLabel="引き渡し日"
+                    freeText
                   />
                 </InlineFieldRow>
               </div>

@@ -3,19 +3,16 @@
 /**
  * InlineDateField — Pane 4 編集 UI の「日付 input」プリミティブ。
  *
- * shadcn 公式 Date Picker パターンに完全準拠:
- *   - `<Popover>` + `<Calendar>` の組み合わせ
- *   - 📅 アイコンを **左** に配置（shadcn 公式サンプルと同じ）
- *   - トリガーの chrome は `<Input>` フィールドに揃える（border-input + bg-card）
- *     ※ Button variant ではなく Input 風にする理由:
- *        Pane 4 内の他フィールドと「箱」の濃淡を揃え、視覚的に浮かないようにする
- *   - 値が空のときは「日付を選択」（shadcn "Pick a date" の翻訳）
- *   - 日付の保存形式は ANSI / ISO 8601（YYYY-MM-DD）
- *   - 月・年はドロップダウン（captionLayout="dropdown"）。1925〜2050 の範囲で
- *     生年月日（過去）から入社可能日（未来）まで網羅する
+ * 2 つのモードを持つ:
  *
- * ADR-0014 で chromeless inline edit から shadcn 標準フォームへ転換した結果として
- * `components/primitives/` に切り出された再利用可能なプリミティブ。
+ * デフォルト（freeText=false）:
+ *   - `<Popover>` + `<Calendar>` のカレンダー専用トリガー
+ *   - 保存形式は ISO 8601（YYYY-MM-DD）。表示は「M月D日」
+ *
+ * freeText=true:
+ *   - テキスト入力欄（自由入力）+ 右端のカレンダーアイコンボタンの 2 要素構成
+ *   - 直接入力: blur/Enter で保存、Esc でキャンセル
+ *   - カレンダー選択: 「M月D日」形式に変換して保存
  */
 
 import { useState } from "react";
@@ -32,19 +29,86 @@ import { formatDisplayDate, formatISODate, parseISODate } from "@/lib/computed/p
 export type InlineDateFieldProps = {
   /** ISO 8601 (YYYY-MM-DD) 形式の文字列。空で「日付を選択」placeholder */
   value: string;
-  /** 値が変わったとき呼ばれる（ISO 8601 文字列を渡す） */
+  /** 値が変わったとき呼ばれる */
   onSave: (v: string) => void;
   /** スクリーンリーダー向けラベル */
   ariaLabel: string;
+  /**
+   * true にするとテキスト直接入力 + カレンダーアイコンボタンの UI になる。
+   * カレンダー選択時は「M月D日」形式で保存する。
+   */
+  freeText?: boolean;
 };
+
+function FreeTextDateField({
+  value,
+  onSave,
+  ariaLabel,
+}: Omit<InlineDateFieldProps, "freeText">) {
+  const displayValue = formatDisplayDate(value) || value;
+  const [inputVal, setInputVal] = useState(displayValue);
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <div className="flex h-8 w-full overflow-hidden rounded-lg border border-input bg-card focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50">
+        <PopoverTrigger
+          aria-label={`${ariaLabel}カレンダー`}
+          className="flex size-8 shrink-0 items-center justify-center text-muted-foreground outline-none transition-colors hover:bg-accent/40"
+        >
+          <CalendarIcon className="size-4" />
+        </PopoverTrigger>
+        <input
+          value={inputVal}
+          onChange={(e) => setInputVal(e.target.value)}
+          onBlur={() => {
+            if (inputVal !== value) onSave(inputVal);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") e.currentTarget.blur();
+            if (e.key === "Escape") {
+              setInputVal(displayValue);
+              e.currentTarget.blur();
+            }
+          }}
+          placeholder="未設定"
+          aria-label={ariaLabel}
+          className="min-w-0 flex-1 bg-transparent pr-2 text-sm text-foreground outline-none placeholder:text-muted-foreground"
+        />
+      </div>
+      <PopoverContent align="start" className="w-auto p-0">
+        <Calendar
+          mode="single"
+          selected={parseISODate(value)}
+          onSelect={(d) => {
+            const formatted = formatDisplayDate(formatISODate(d));
+            setInputVal(formatted);
+            if (formatted !== value) onSave(formatted);
+            setOpen(false);
+          }}
+          captionLayout="dropdown"
+          startMonth={new Date(1925, 0)}
+          endMonth={new Date(2050, 11)}
+          defaultMonth={parseISODate(value) ?? new Date()}
+          autoFocus
+        />
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 export function InlineDateField({
   value,
   onSave,
   ariaLabel,
+  freeText = false,
 }: InlineDateFieldProps) {
   const [open, setOpen] = useState(false);
   const selected = parseISODate(value);
+
+  if (freeText) {
+    return <FreeTextDateField value={value} onSave={onSave} ariaLabel={ariaLabel} />;
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
