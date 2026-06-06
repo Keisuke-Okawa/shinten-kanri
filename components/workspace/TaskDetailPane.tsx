@@ -15,7 +15,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Check, X } from "lucide-react";
+import { Check, Pencil, X } from "lucide-react";
 import { Toggle } from "@/components/ui/toggle";
 import {
   InlineTextField,
@@ -131,6 +131,57 @@ type TaskDetailPaneProps = {
   onUpdateProfile: (updates: Partial<StoreProfile>) => void;
 };
 
+function EditableTaskName({
+  name,
+  onSave,
+}: {
+  name: string;
+  onSave: (v: string) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+
+  if (editing) {
+    return (
+      <div
+        className="min-w-0 flex-1"
+        onBlur={(e) => {
+          if (!e.currentTarget.contains(e.relatedTarget)) {
+            setEditing(false);
+          }
+        }}
+      >
+        <InlineTextField
+          value={name}
+          onSave={(v) => {
+            const trimmed = v.trim();
+            if (trimmed) onSave(trimmed);
+            setEditing(false);
+          }}
+          ariaLabel="タスク名"
+          autoFocus
+          autoComplete="off"
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex min-w-0 flex-1 items-center gap-1.5">
+      <span className="truncate text-sm font-semibold text-foreground">
+        {name}
+      </span>
+      <button
+        type="button"
+        onClick={() => setEditing(true)}
+        aria-label="タスク名を編集"
+        className="flex size-6 shrink-0 items-center justify-center rounded text-muted-foreground hover:text-foreground"
+      >
+        <Pencil className="size-3.5" />
+      </button>
+    </div>
+  );
+}
+
 function StandardTaskDetail({
   task,
   onUpdateTask,
@@ -245,10 +296,6 @@ function StandardTaskDetail({
           ariaLabel="メモ"
         />
       </Pane4Section>
-
-      <div className="flex justify-end px-5 pb-4">
-        <Button size="sm">完了にする</Button>
-      </div>
     </div>
   );
 }
@@ -581,9 +628,11 @@ export function TaskDetailPane({
       {pane4Open && task ? (
         <>
           <div className="flex shrink-0 items-center gap-2 px-3 pt-2.5 pb-1">
-            <span className="flex-1 truncate text-sm font-semibold text-foreground">
-              {task.name}
-            </span>
+            <EditableTaskName
+              key={task.id}
+              name={task.name}
+              onSave={(v) => onUpdateTask({ name: v })}
+            />
             <Pane4Toggle open={pane4Open} onToggle={onTogglePane4} />
           </div>
           <ScrollArea className="min-h-0 flex-1">

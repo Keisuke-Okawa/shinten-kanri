@@ -31,6 +31,8 @@ export type InlineTextFieldProps = {
   className?: string;
   /** autocomplete 属性。ブラウザ自動入力ボタンを抑制したい場合は "off" を渡す */
   autoComplete?: string;
+  /** マウント時にフォーカスする */
+  autoFocus?: boolean;
 };
 
 export function InlineTextField({
@@ -41,6 +43,7 @@ export function InlineTextField({
   placeholder,
   className,
   autoComplete,
+  autoFocus,
 }: InlineTextFieldProps) {
   return (
     <Input
@@ -49,6 +52,7 @@ export function InlineTextField({
       placeholder={placeholder ?? "未設定"}
       aria-label={ariaLabel}
       autoComplete={autoComplete}
+      autoFocus={autoFocus}
       onBlur={(e) => {
         if (e.target.value !== value) onSave(e.target.value);
       }}
