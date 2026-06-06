@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Check, X } from "lucide-react";
+import { Toggle } from "@/components/ui/toggle";
 import {
   InlineTextField,
   InlineDateField,
@@ -24,19 +25,38 @@ import {
   InlineFieldRow,
 } from "@/components/primitives";
 
-const TASK_STATUS_OPTIONS = ["未着手", "進行中", "完了"] as const;
 const PAYMENT_OPTIONS = ["現金", "振込"] as const;
 const SMOKING_OPTIONS = ["禁煙", "分煙", "喫煙"] as const;
 const YES_NO_OPTIONS = ["有", "無"] as const;
 
-function statusToLabel(status: TaskStatusKey): string {
-  if (status === "na") return "対象外";
-  return TASK_STATUS_LABELS[status];
-}
+const TASK_STATUS_KEYS = ["notStarted", "inProgress", "completed"] as const;
+type EditableTaskStatusKey = (typeof TASK_STATUS_KEYS)[number];
 
-function labelToStatus(label: string): TaskStatusKey {
-  const entry = Object.entries(TASK_STATUS_LABELS).find(([, v]) => v === label);
-  return (entry?.[0] as TaskStatusKey) ?? "notStarted";
+function StatusToggleGroup({
+  value,
+  onChange,
+}: {
+  value: TaskStatusKey;
+  onChange: (v: EditableTaskStatusKey) => void;
+}) {
+  return (
+    <div className="flex gap-2">
+      {TASK_STATUS_KEYS.map((status) => (
+        <Toggle
+          key={status}
+          pressed={value === status}
+          onPressedChange={(pressed) => {
+            if (pressed) onChange(status);
+          }}
+          size="sm"
+          aria-label={TASK_STATUS_LABELS[status]}
+          className="px-3"
+        >
+          {TASK_STATUS_LABELS[status]}
+        </Toggle>
+      ))}
+    </div>
+  );
 }
 
 type TaskDetailPaneProps = {
@@ -83,12 +103,9 @@ function StandardTaskDetail({
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-1">
       <Pane4Section id="task-meta" title="タスク情報">
         <dl className="flex flex-col gap-2.5 text-sm">
-          <InlineFieldRow label="タスク名">
-            <span className="text-sm text-foreground">{task.name}</span>
-          </InlineFieldRow>
           <InlineFieldRow label="期日">
             <InlineDateField
               value={task.dueDate}
@@ -97,23 +114,12 @@ function StandardTaskDetail({
             />
           </InlineFieldRow>
           <InlineFieldRow label="ステータス">
-            <InlineSelectField
-              value={statusToLabel(task.status)}
-              options={TASK_STATUS_OPTIONS}
-              onSave={(v) => onUpdateTask({ status: labelToStatus(v) })}
-              ariaLabel="ステータス"
+            <StatusToggleGroup
+              value={task.status}
+              onChange={(v) => onUpdateTask({ status: v })}
             />
           </InlineFieldRow>
         </dl>
-      </Pane4Section>
-
-      <Pane4Section id="task-memo" title="メモ">
-        <InlineTextareaField
-          value={task.memo ?? ""}
-          onSave={(v) => onUpdateTask({ memo: v })}
-          ariaLabel="メモ"
-
-        />
       </Pane4Section>
 
       <Pane4Section id="task-subtasks" title="子タスク">
@@ -154,22 +160,30 @@ function StandardTaskDetail({
               </button>
             </div>
           ))}
-        </div>
-        <div className="mt-2 flex gap-2">
-          <Input
-            value={newSubtaskName}
-            onChange={(e) => setNewSubtaskName(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && addSubtask()}
-            placeholder="子タスクを入力"
-            className="h-7 text-sm"
-          />
-          <Button size="sm" variant="outline" onClick={addSubtask}>
-            追加
-          </Button>
+          <div className="flex gap-2">
+            <Input
+              value={newSubtaskName}
+              onChange={(e) => setNewSubtaskName(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && addSubtask()}
+              placeholder="子タスクを入力"
+              className="h-7 w-36 text-sm"
+            />
+            <Button size="sm" variant="outline" onClick={addSubtask}>
+              追加
+            </Button>
+          </div>
         </div>
       </Pane4Section>
 
-      <div className="flex justify-end">
+      <Pane4Section id="task-memo" title="メモ">
+        <InlineTextareaField
+          value={task.memo ?? ""}
+          onSave={(v) => onUpdateTask({ memo: v })}
+          ariaLabel="メモ"
+        />
+      </Pane4Section>
+
+      <div className="flex justify-end px-5 pb-4">
         <Button size="sm">完了にする</Button>
       </div>
     </div>

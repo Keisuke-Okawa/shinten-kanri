@@ -18,7 +18,7 @@ export function Pane4Section({
   children,
 }: Pane4SectionProps) {
   return (
-    <section id={id} className={cn("flex flex-col gap-3 px-5 py-4", className)}>
+    <section id={id} className={cn("flex flex-col gap-1.5 px-5 py-4", className)}>
       <SectionLabel>{title}</SectionLabel>
       {children}
     </section>
