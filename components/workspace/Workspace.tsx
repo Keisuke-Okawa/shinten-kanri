@@ -9,7 +9,7 @@
  * Pane 4: タスク詳細 / 号車報告書フォーム
  */
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 
 import {
   type Store,
@@ -53,6 +53,26 @@ export function Workspace({ initialStores, workspace }: WorkspaceProps) {
   const [urgencySettings, setUrgencySettings] = useState<UrgencySettings>(
     loadUrgencySettings,
   );
+
+  // 日付変化で信号機を再計算するため、今日の日付を state で管理する
+  const [today, setToday] = useState(() => new Date());
+  useEffect(() => {
+    function tick() {
+      const now = new Date();
+      setToday((prev) => {
+        if (
+          prev.getFullYear() === now.getFullYear() &&
+          prev.getMonth() === now.getMonth() &&
+          prev.getDate() === now.getDate()
+        ) {
+          return prev;
+        }
+        return now;
+      });
+    }
+    const id = setInterval(tick, 60 * 1000);
+    return () => clearInterval(id);
+  }, []);
 
   const handleSaveUrgencySettings = useCallback((s: UrgencySettings) => {
     saveUrgencySettings(s);
@@ -174,11 +194,11 @@ export function Workspace({ initialStores, workspace }: WorkspaceProps) {
           name: s.profile.name,
           openDate: s.profile.openDate,
           progressPercent: getStoreProgressPercent(s),
-          storeTrafficLight: getStoreTrafficLight(s, urgencySettings),
+          storeTrafficLight: getStoreTrafficLight(s, urgencySettings, today),
           autoCompleted: shouldAutoComplete(s),
         })),
     }));
-  }, [stores, urgencySettings]);
+  }, [stores, urgencySettings, today]);
 
   const taskRows = useMemo(
     () =>
@@ -189,11 +209,11 @@ export function Workspace({ initialStores, workspace }: WorkspaceProps) {
             ...task,
             subtasks: getVisibleSubtasks(task.subtasks, activeStore.profile),
             displayStatus,
-            trafficLight: deriveTrafficLight(task.dueDate, displayStatus, urgencySettings),
+            trafficLight: deriveTrafficLight(task.dueDate, displayStatus, urgencySettings, today),
           };
         }),
       ),
-    [activeStore, urgencySettings],
+    [activeStore, urgencySettings, today],
   );
 
   const selectedTask = useMemo(() => {
