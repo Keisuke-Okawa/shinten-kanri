@@ -192,7 +192,7 @@ export function StoreProfilePane({
                 />
               </div>
               <Separator />
-              <div className="grid grid-cols-[auto_auto_1fr_auto_5rem] items-center gap-x-2 gap-y-2.5 text-sm">
+              <div className="grid grid-cols-[auto_auto_5rem_auto_5rem] items-center gap-x-2 gap-y-2.5 text-sm">
                 {/* 配送時間 */}
                 <span className="shrink-0 text-muted-foreground">配送時間</span>
                 <span />
