@@ -228,4 +228,12 @@
   html {
     @apply font-sans;
   }
+  /* ブラウザの連絡先・認証情報自動入力ボタンを全入力欄で非表示 */
+  input::-webkit-contacts-auto-fill-button,
+  input::-webkit-credentials-auto-fill-button {
+    visibility: hidden;
+    pointer-events: none;
+    width: 0;
+    height: 0;
+  }
 }

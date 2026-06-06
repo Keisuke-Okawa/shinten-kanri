@@ -29,6 +29,8 @@ export type InlineTextFieldProps = {
   placeholder?: string;
   /** className override（width 制限などに使う） */
   className?: string;
+  /** autocomplete 属性。ブラウザ自動入力ボタンを抑制したい場合は "off" を渡す */
+  autoComplete?: string;
 };
 
 export function InlineTextField({
@@ -38,6 +40,7 @@ export function InlineTextField({
   inputType = "text",
   placeholder,
   className,
+  autoComplete,
 }: InlineTextFieldProps) {
   return (
     <Input
@@ -45,6 +48,7 @@ export function InlineTextField({
       defaultValue={value}
       placeholder={placeholder ?? "未設定"}
       aria-label={ariaLabel}
+      autoComplete={autoComplete}
       onBlur={(e) => {
         if (e.target.value !== value) onSave(e.target.value);
       }}
