@@ -278,11 +278,22 @@ function VehicleReportDetail({
         </span>
       </div>
 
-      <Pane4Section id="vr-status" title="進行状態">
-        <StatusToggleGroup
-          value={task.status}
-          onChange={(v) => onUpdateTask({ status: v })}
-        />
+      <Pane4Section id="vr-meta" title="タスク情報">
+        <dl className="flex flex-col gap-2.5 text-sm">
+          <InlineFieldRow label="期日">
+            <InlineDateField
+              value={task.dueDate}
+              onSave={(v) => onUpdateTask({ dueDate: v })}
+              ariaLabel="期日"
+            />
+          </InlineFieldRow>
+          <InlineFieldRow label="ステータス">
+            <StatusToggleGroup
+              value={task.status}
+              onChange={(v) => onUpdateTask({ status: v })}
+            />
+          </InlineFieldRow>
+        </dl>
       </Pane4Section>
 
       <Pane4Section id="vr-basic" title="基本情報">
