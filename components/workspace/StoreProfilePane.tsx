@@ -233,20 +233,23 @@ export function StoreProfilePane({
                   onSaveStart={(v) => update("deliveryTimeStart", v)}
                   onSaveEnd={(v) => update("deliveryTimeEnd", v)}
                 />
-                <TimeRange
-                  label="出勤時間（平日）"
-                  startValue={profile.customerWorkStartWeekday}
-                  endValue={profile.customerWorkEndWeekday}
-                  onSaveStart={(v) => update("customerWorkStartWeekday", v)}
-                  onSaveEnd={(v) => update("customerWorkEndWeekday", v)}
-                />
-                <TimeRange
-                  label="出勤時間（土日）"
-                  startValue={profile.customerWorkStartWeekend}
-                  endValue={profile.customerWorkEndWeekend}
-                  onSaveStart={(v) => update("customerWorkStartWeekend", v)}
-                  onSaveEnd={(v) => update("customerWorkEndWeekend", v)}
-                />
+                <div className="flex items-center justify-between gap-2 text-sm">
+                  <span className="shrink-0 text-muted-foreground">出勤時間</span>
+                  <div className="flex items-center gap-2">
+                    <span className="shrink-0 text-xs text-muted-foreground">平日</span>
+                    <InlineTimeField
+                      value={profile.customerWorkStartWeekday}
+                      onSave={(v) => update("customerWorkStartWeekday", v)}
+                      ariaLabel="出勤時間（平日）"
+                    />
+                    <span className="shrink-0 text-xs text-muted-foreground">土日</span>
+                    <InlineTimeField
+                      value={profile.customerWorkStartWeekend}
+                      onSave={(v) => update("customerWorkStartWeekend", v)}
+                      ariaLabel="出勤時間（土日）"
+                    />
+                  </div>
+                </div>
               </div>
               <Separator />
               <div className="flex flex-col gap-2.5">
