@@ -14,6 +14,9 @@
 export { InlineTextField } from "./InlineTextField";
 export type { InlineTextFieldProps } from "./InlineTextField";
 
+export { InlineNumberField } from "./InlineNumberField";
+export type { InlineNumberFieldProps } from "./InlineNumberField";
+
 export { InlineDateField } from "./InlineDateField";
 export type { InlineDateFieldProps } from "./InlineDateField";
 

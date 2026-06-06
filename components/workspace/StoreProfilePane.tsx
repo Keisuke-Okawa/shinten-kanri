@@ -18,6 +18,7 @@ import {
   InlineTextareaField,
   InlineFieldRow,
   InlineTimeField,
+  InlineNumberField,
 } from "@/components/primitives";
 
 type StoreProfilePaneProps = {
@@ -112,7 +113,7 @@ export function StoreProfilePane({
                   ariaLabel="住所"
                 />
               </InlineFieldRow>
-              <div className="grid grid-cols-[auto_1fr_auto_1fr] items-center gap-x-2 gap-y-2.5 text-sm">
+              <div className="grid grid-cols-[auto_11fr_auto_9fr] items-center gap-x-2 gap-y-2.5 text-sm">
                 <span className="shrink-0 whitespace-nowrap text-muted-foreground">TEL</span>
                 <InlineTextField
                   value={profile.phone}
@@ -126,9 +127,7 @@ export function StoreProfilePane({
                   onSave={(v) => update("customerCode", v)}
                   ariaLabel="得意先コード"
                 />
-              </div>
-              <Separator />
-              <div className="grid grid-cols-[auto_1fr_auto_1fr] items-center gap-x-2 gap-y-2.5 text-sm">
+                <Separator className="col-span-4 my-0" />
                 <span className="shrink-0 whitespace-nowrap text-muted-foreground">席数</span>
                 <InlineTextField
                   value={profile.seatCount}
@@ -136,7 +135,7 @@ export function StoreProfilePane({
                   ariaLabel="席数"
                 />
                 <span className="shrink-0 whitespace-nowrap text-muted-foreground">客単価</span>
-                <InlineTextField
+                <InlineNumberField
                   value={profile.avgSpendPerCustomer}
                   onSave={(v) => update("avgSpendPerCustomer", v)}
                   ariaLabel="客単価"
@@ -148,7 +147,7 @@ export function StoreProfilePane({
                   ariaLabel="休日"
                 />
                 <span className="shrink-0 whitespace-nowrap text-muted-foreground">売上見込</span>
-                <InlineTextField
+                <InlineNumberField
                   value={profile.expectedSales}
                   onSave={(v) => update("expectedSales", v)}
                   ariaLabel="売上見込"
