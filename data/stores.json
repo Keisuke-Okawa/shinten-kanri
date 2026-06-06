@@ -111,6 +111,67 @@
           { "id": "t1-9-2", "name": "雑瓶エビデンス取得", "completed": false, "requiresMiscBottle": true },
           { "id": "t1-9-3", "name": "コード作成申請", "completed": false, "pinBottom": true }
         ]
+      },
+      {
+        "id": "t1-10",
+        "name": "協賛対応",
+        "kind": "standard",
+        "status": "notStarted",
+        "dueDate": "2026-06-10",
+        "requiresSponsorship": true,
+        "subtasks": [
+          { "id": "t1-10-1", "name": "条件取り決め", "completed": false },
+          { "id": "t1-10-2", "name": "決裁取得", "completed": false },
+          { "id": "t1-10-3", "name": "協賛契約書作成", "completed": false },
+          { "id": "t1-10-4", "name": "請求書発行依頼", "completed": false },
+          { "id": "t1-10-5", "name": "先方捺印", "completed": false }
+        ]
+      },
+      {
+        "id": "t1-11",
+        "name": "協賛支払い",
+        "kind": "standard",
+        "status": "notStarted",
+        "dueDate": "2026-06-14",
+        "requiresSponsorship": true,
+        "subtasks": [
+          { "id": "t1-11-1", "name": "支払い申請・納品", "completed": false },
+          { "id": "t1-11-2", "name": "押印申請", "completed": false },
+          { "id": "t1-11-3", "name": "協賛契約書返却", "completed": false }
+        ]
+      },
+      {
+        "id": "t1-12",
+        "name": "企業調査",
+        "kind": "standard",
+        "status": "notStarted",
+        "dueDate": "2026-06-05",
+        "requiresNewStore": true
+      },
+      {
+        "id": "t1-13",
+        "name": "契約書",
+        "kind": "standard",
+        "status": "notStarted",
+        "dueDate": "2026-06-10",
+        "requiresNewStore": true,
+        "subtasks": [
+          { "id": "t1-13-1", "name": "雑瓶取り決め", "completed": false },
+          { "id": "t1-13-2", "name": "契約書提出", "completed": false },
+          { "id": "t1-13-3", "name": "契約書捺印", "completed": false }
+        ]
+      },
+      {
+        "id": "t1-14",
+        "name": "新規コード作成",
+        "kind": "standard",
+        "status": "notStarted",
+        "dueDate": "2026-06-12",
+        "requiresNewStore": true,
+        "subtasks": [
+          { "id": "t1-14-1", "name": "経営者コード作成", "completed": false },
+          { "id": "t1-14-2", "name": "新規コード作成", "completed": false }
+        ]
       }
     ]
   },

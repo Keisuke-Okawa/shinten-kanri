@@ -116,6 +116,8 @@ export const taskSchema = z.object({
   requiresProxyDelivery: z.boolean().optional(),
   requiresCongratulatoryFlowers: z.boolean().optional(),
   requiresKeyCustody: z.boolean().optional(),
+  requiresSponsorship: z.boolean().optional(),
+  requiresNewStore: z.boolean().optional(),
 });
 export type Task = z.infer<typeof taskSchema>;
 
