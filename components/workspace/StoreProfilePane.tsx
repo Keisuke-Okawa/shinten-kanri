@@ -49,39 +49,6 @@ function ConditionToggle({
   );
 }
 
-function TimeRange({
-  label,
-  startValue,
-  endValue,
-  onSaveStart,
-  onSaveEnd,
-}: {
-  label: string;
-  startValue: string;
-  endValue: string;
-  onSaveStart: (v: string) => void;
-  onSaveEnd: (v: string) => void;
-}) {
-  return (
-    <div className="flex items-center justify-between gap-2 text-sm">
-      <span className="shrink-0 text-muted-foreground">{label}</span>
-      <div className="flex items-center gap-1.5">
-        <InlineTimeField
-          value={startValue}
-          onSave={onSaveStart}
-          ariaLabel={`${label}開始`}
-        />
-        <span className="shrink-0 text-xs text-muted-foreground">〜</span>
-        <InlineTimeField
-          value={endValue}
-          onSave={onSaveEnd}
-          ariaLabel={`${label}終了`}
-        />
-      </div>
-    </div>
-  );
-}
-
 export function StoreProfilePane({
   profile,
   setProfile,
@@ -225,47 +192,63 @@ export function StoreProfilePane({
                 />
               </div>
               <Separator />
-              <div className="flex flex-col gap-2.5">
-                <TimeRange
-                  label="配送時間"
-                  startValue={profile.deliveryTimeStart}
-                  endValue={profile.deliveryTimeEnd}
-                  onSaveStart={(v) => update("deliveryTimeStart", v)}
-                  onSaveEnd={(v) => update("deliveryTimeEnd", v)}
+              <div className="grid grid-cols-[auto_auto_1fr_auto_5rem] items-center gap-x-2 gap-y-2.5 text-sm">
+                {/* 配送時間 */}
+                <span className="shrink-0 text-muted-foreground">配送時間</span>
+                <span />
+                <InlineTimeField
+                  value={profile.deliveryTimeStart}
+                  onSave={(v) => update("deliveryTimeStart", v)}
+                  ariaLabel="配送開始時間"
                 />
-                <div className="flex items-center justify-between gap-2 text-sm">
-                  <span className="shrink-0 text-muted-foreground">出勤時間</span>
-                  <div className="flex items-center gap-2">
-                    <span className="shrink-0 text-xs text-muted-foreground">平日</span>
-                    <InlineTimeField
-                      value={profile.customerWorkStartWeekday}
-                      onSave={(v) => update("customerWorkStartWeekday", v)}
-                      ariaLabel="出勤時間（平日）"
-                    />
-                    <span className="shrink-0 text-xs text-muted-foreground">土日</span>
-                    <InlineTimeField
-                      value={profile.customerWorkStartWeekend}
-                      onSave={(v) => update("customerWorkStartWeekend", v)}
-                      ariaLabel="出勤時間（土日）"
-                    />
-                  </div>
-                </div>
-              </div>
-              <Separator />
-              <div className="flex flex-col gap-2.5">
-                <TimeRange
-                  label="営業時間 1"
-                  startValue={profile.businessHours1Start}
-                  endValue={profile.businessHours1End}
-                  onSaveStart={(v) => update("businessHours1Start", v)}
-                  onSaveEnd={(v) => update("businessHours1End", v)}
+                <span className="text-center text-muted-foreground">〜</span>
+                <InlineTimeField
+                  value={profile.deliveryTimeEnd}
+                  onSave={(v) => update("deliveryTimeEnd", v)}
+                  ariaLabel="配送終了時間"
                 />
-                <TimeRange
-                  label="営業時間 2"
-                  startValue={profile.businessHours2Start}
-                  endValue={profile.businessHours2End}
-                  onSaveStart={(v) => update("businessHours2Start", v)}
-                  onSaveEnd={(v) => update("businessHours2End", v)}
+                {/* 出勤時間 */}
+                <span className="shrink-0 text-muted-foreground">出勤時間</span>
+                <span className="shrink-0 text-xs text-muted-foreground">平日</span>
+                <InlineTimeField
+                  value={profile.customerWorkStartWeekday}
+                  onSave={(v) => update("customerWorkStartWeekday", v)}
+                  ariaLabel="出勤時間（平日）"
+                />
+                <span className="text-center text-xs text-muted-foreground">土日</span>
+                <InlineTimeField
+                  value={profile.customerWorkStartWeekend}
+                  onSave={(v) => update("customerWorkStartWeekend", v)}
+                  ariaLabel="出勤時間（土日）"
+                />
+                <Separator className="col-span-5 my-0.5" />
+                {/* 営業時間 1 */}
+                <span className="shrink-0 text-muted-foreground">営業時間 1</span>
+                <span />
+                <InlineTimeField
+                  value={profile.businessHours1Start}
+                  onSave={(v) => update("businessHours1Start", v)}
+                  ariaLabel="営業時間1開始"
+                />
+                <span className="text-center text-muted-foreground">〜</span>
+                <InlineTimeField
+                  value={profile.businessHours1End}
+                  onSave={(v) => update("businessHours1End", v)}
+                  ariaLabel="営業時間1終了"
+                />
+                {/* 営業時間 2 */}
+                <span className="shrink-0 text-muted-foreground">営業時間 2</span>
+                <span />
+                <InlineTimeField
+                  value={profile.businessHours2Start}
+                  onSave={(v) => update("businessHours2Start", v)}
+                  ariaLabel="営業時間2開始"
+                />
+                <span className="text-center text-muted-foreground">〜</span>
+                <InlineTimeField
+                  value={profile.businessHours2End}
+                  onSave={(v) => update("businessHours2End", v)}
+                  ariaLabel="営業時間2終了"
                 />
               </div>
             </CardContent>
