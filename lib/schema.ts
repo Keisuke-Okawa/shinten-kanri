@@ -88,6 +88,7 @@ export const storeProfileSchema = z.object({
   businessHours2Start: z.string(),
   businessHours2End: z.string(),
   pane2Memo: z.string(),
+  miscBottle: z.boolean(),
 });
 export type StoreProfile = z.infer<typeof storeProfileSchema>;
 
@@ -97,6 +98,7 @@ export const subTaskSchema = z.object({
   id: z.string(),
   name: z.string(),
   completed: z.boolean(),
+  requiresMiscBottle: z.boolean().optional(),
 });
 export type SubTask = z.infer<typeof subTaskSchema>;
 

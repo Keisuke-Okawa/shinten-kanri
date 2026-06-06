@@ -24,6 +24,7 @@ import {
   getDisplayTaskStatus,
   getStoreProgressPercent,
   getStoreTrafficLight,
+  getVisibleSubtasks,
   shouldAutoComplete,
 } from "@/lib/computed/tasks";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
@@ -82,9 +83,20 @@ export function Workspace({ initialStores, workspace }: WorkspaceProps) {
           if (s.id !== selectedStoreId) return s;
           return {
             ...s,
-            tasks: s.tasks.map((t) =>
-              t.id === selectedTaskId ? { ...t, ...updates } : t,
-            ),
+            tasks: s.tasks.map((t) => {
+              if (t.id !== selectedTaskId) return t;
+              if (updates.subtasks !== undefined && t.subtasks) {
+                const hiddenSubtasks = t.subtasks.filter(
+                  (sub) => sub.requiresMiscBottle && !s.profile.miscBottle,
+                );
+                return {
+                  ...t,
+                  ...updates,
+                  subtasks: [...updates.subtasks, ...hiddenSubtasks],
+                };
+              }
+              return { ...t, ...updates };
+            }),
           };
         }),
       );
@@ -146,6 +158,7 @@ export function Workspace({ initialStores, workspace }: WorkspaceProps) {
         const displayStatus = getDisplayTaskStatus(task, activeStore.profile);
         return {
           ...task,
+          subtasks: getVisibleSubtasks(task.subtasks, activeStore.profile),
           displayStatus,
           trafficLight: deriveTrafficLight(task.dueDate, displayStatus),
         };

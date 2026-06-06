@@ -2,6 +2,7 @@ import {
   type Store,
   type StoreProfile,
   type StoreStatusKey,
+  type SubTask,
   type Task,
   type TaskStatusKey,
   type TrafficLight,
@@ -27,8 +28,17 @@ export function isTaskApplicable(task: Task, profile: StoreProfile): boolean {
   if (task.requiresProxyDelivery && !profile.proxyDelivery) return false;
   if (task.requiresCongratulatoryFlowers && !profile.congratulatoryFlowers)
     return false;
-  if (task.requiresKeyCustody && !needsKeyCustody(profile)) return false;
+  if (task.requiresKeyCustody && !needsKeyCustody(profile) && !profile.keyCustody) return false;
   return true;
+}
+
+/** プロフィール条件に基づき表示すべき子タスクを返す */
+export function getVisibleSubtasks(
+  subtasks: SubTask[] | undefined,
+  profile: StoreProfile,
+): SubTask[] {
+  if (!subtasks) return [];
+  return subtasks.filter((s) => !s.requiresMiscBottle || profile.miscBottle);
 }
 
 /** 表示用ステータス（対象外は na） */
