@@ -196,9 +196,19 @@ export function StoreProfilePane({
             <CardContent className="flex flex-col gap-3">
               <div className="flex flex-wrap gap-2">
                 <ConditionToggle
-                  label="WEB注文"
+                  label="WEB"
                   pressed={profile.webOrder}
                   onPressedChange={(v) => update("webOrder", v)}
+                />
+                <ConditionToggle
+                  label="雑瓶"
+                  pressed={profile.miscBottle}
+                  onPressedChange={(v) => update("miscBottle", v)}
+                />
+                <ConditionToggle
+                  label="鍵預かり"
+                  pressed={profile.keyCustody}
+                  onPressedChange={(v) => update("keyCustody", v)}
                 />
                 <ConditionToggle
                   label="祝花"
@@ -209,16 +219,6 @@ export function StoreProfilePane({
                   label="代配"
                   pressed={profile.proxyDelivery}
                   onPressedChange={(v) => update("proxyDelivery", v)}
-                />
-                <ConditionToggle
-                  label="鍵預かり"
-                  pressed={profile.keyCustody}
-                  onPressedChange={(v) => update("keyCustody", v)}
-                />
-                <ConditionToggle
-                  label="雑瓶"
-                  pressed={profile.miscBottle}
-                  onPressedChange={(v) => update("miscBottle", v)}
                 />
               </div>
               <Separator />
