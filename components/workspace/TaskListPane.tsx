@@ -83,6 +83,12 @@ export function TaskListPane({
                         報告書
                       </Badge>
                     )}
+                    {task.subtasks && task.subtasks.length > 0 && (
+                      <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
+                        {task.subtasks.filter((s) => s.completed).length}/
+                        {task.subtasks.length}
+                      </span>
+                    )}
                   </div>
                   {!isNa && (
                     <span className="text-xs text-muted-foreground tabular-nums">

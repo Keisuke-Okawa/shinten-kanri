@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import {
   type StoreProfile,
+  type SubTask,
   type Task,
   type TaskStatusKey,
 } from "@/lib/schema";
@@ -12,6 +14,8 @@ import { Pane4Section } from "@/components/workspace/Pane4Section";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Check, X } from "lucide-react";
 import {
   InlineTextField,
   InlineDateField,
@@ -51,6 +55,33 @@ function StandardTaskDetail({
   task: Task;
   onUpdateTask: (updates: Partial<Task>) => void;
 }) {
+  const [newSubtaskName, setNewSubtaskName] = useState("");
+
+  const subtasks: SubTask[] = task.subtasks ?? [];
+
+  function toggleSubtask(id: string) {
+    const updated = subtasks.map((s) =>
+      s.id === id ? { ...s, completed: !s.completed } : s,
+    );
+    onUpdateTask({ subtasks: updated });
+  }
+
+  function deleteSubtask(id: string) {
+    onUpdateTask({ subtasks: subtasks.filter((s) => s.id !== id) });
+  }
+
+  function addSubtask() {
+    const name = newSubtaskName.trim();
+    if (!name) return;
+    const newSubtask: SubTask = {
+      id: `${task.id}-${Date.now()}`,
+      name,
+      completed: false,
+    };
+    onUpdateTask({ subtasks: [...subtasks, newSubtask] });
+    setNewSubtaskName("");
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <Pane4Section id="task-meta" title="タスク情報">
@@ -83,6 +114,59 @@ function StandardTaskDetail({
           ariaLabel="メモ"
 
         />
+      </Pane4Section>
+
+      <Pane4Section id="task-subtasks" title="子タスク">
+        <div className="flex flex-col gap-1.5">
+          {subtasks.map((subtask) => (
+            <div
+              key={subtask.id}
+              className="flex items-center gap-2"
+            >
+              <button
+                type="button"
+                aria-label={subtask.completed ? "完了を取り消す" : "完了にする"}
+                onClick={() => toggleSubtask(subtask.id)}
+                className={cn(
+                  "flex size-4 shrink-0 items-center justify-center rounded border border-border",
+                  subtask.completed && "border-primary bg-primary",
+                )}
+              >
+                {subtask.completed && (
+                  <Check className="size-3 text-primary-foreground" />
+                )}
+              </button>
+              <span
+                className={cn(
+                  "flex-1 text-sm",
+                  subtask.completed && "text-muted-foreground line-through",
+                )}
+              >
+                {subtask.name}
+              </span>
+              <button
+                type="button"
+                aria-label="削除"
+                onClick={() => deleteSubtask(subtask.id)}
+                className="flex size-5 shrink-0 items-center justify-center rounded text-muted-foreground hover:text-foreground"
+              >
+                <X className="size-3.5" />
+              </button>
+            </div>
+          ))}
+        </div>
+        <div className="mt-2 flex gap-2">
+          <Input
+            value={newSubtaskName}
+            onChange={(e) => setNewSubtaskName(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && addSubtask()}
+            placeholder="子タスクを入力"
+            className="h-7 text-sm"
+          />
+          <Button size="sm" variant="outline" onClick={addSubtask}>
+            追加
+          </Button>
+        </div>
       </Pane4Section>
 
       <div className="flex justify-end">

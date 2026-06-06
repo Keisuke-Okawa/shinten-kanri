@@ -110,6 +110,16 @@
         "status": "notStarted",
         "dueDate": "2026-06-12",
         "requiresProxyDelivery": true
+      },
+      {
+        "id": "t1-9",
+        "name": "コード作成",
+        "kind": "standard",
+        "status": "notStarted",
+        "dueDate": "2025-05-20",
+        "subtasks": [
+          { "id": "t1-9-1", "name": "エビデンス取得", "completed": false }
+        ]
       }
     ]
   },

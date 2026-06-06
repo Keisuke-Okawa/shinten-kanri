@@ -91,6 +91,15 @@ export const storeProfileSchema = z.object({
 });
 export type StoreProfile = z.infer<typeof storeProfileSchema>;
 
+// ===== 子タスク =====
+
+export const subTaskSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  completed: z.boolean(),
+});
+export type SubTask = z.infer<typeof subTaskSchema>;
+
 // ===== タスク =====
 
 export const taskSchema = z.object({
@@ -100,6 +109,7 @@ export const taskSchema = z.object({
   status: taskStatusKeySchema,
   dueDate: z.string(),
   memo: z.string().optional(),
+  subtasks: z.array(subTaskSchema).optional(),
   // 表示条件（プロフィール連動）
   requiresWebOrder: z.boolean().optional(),
   requiresProxyDelivery: z.boolean().optional(),
