@@ -97,21 +97,14 @@ export function StoreProfilePane({
               <CardTitle>{PANE2_SECTION.basic}</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-2.5">
-              <InlineFieldRow label="企業名">
-                <InlineTextField
-                  value={profile.companyName}
-                  onSave={(v) => update("companyName", v)}
-                  ariaLabel="企業名"
-                />
-              </InlineFieldRow>
-              <InlineFieldRow label="店名">
+              <InlineFieldRow label="店名" direction="horizontal">
                 <InlineTextField
                   value={profile.name}
                   onSave={(v) => update("name", v)}
                   ariaLabel="店名"
                 />
               </InlineFieldRow>
-              <InlineFieldRow label="住所">
+              <InlineFieldRow label="住所" direction="horizontal">
                 <InlineTextField
                   value={profile.address}
                   onSave={(v) => update("address", v)}
@@ -119,14 +112,14 @@ export function StoreProfilePane({
                 />
               </InlineFieldRow>
               <div className="grid grid-cols-2 gap-x-4 gap-y-2.5">
-                <InlineFieldRow label="TEL">
+                <InlineFieldRow label="TEL" direction="horizontal">
                   <InlineTextField
                     value={profile.phone}
                     onSave={(v) => update("phone", v)}
                     ariaLabel="電話番号"
                   />
                 </InlineFieldRow>
-                <InlineFieldRow label="得意先CD">
+                <InlineFieldRow label="CD" direction="horizontal">
                   <InlineTextField
                     value={profile.customerCode}
                     onSave={(v) => update("customerCode", v)}
@@ -167,28 +160,28 @@ export function StoreProfilePane({
               </div>
               <Separator />
               <div className="grid grid-cols-2 gap-x-4 gap-y-2.5">
-                <InlineFieldRow label="席数">
+                <InlineFieldRow label="席数" direction="horizontal">
                   <InlineTextField
                     value={profile.seatCount}
                     onSave={(v) => update("seatCount", v)}
                     ariaLabel="席数"
                   />
                 </InlineFieldRow>
-                <InlineFieldRow label="客単価">
+                <InlineFieldRow label="客単価" direction="horizontal">
                   <InlineTextField
                     value={profile.avgSpendPerCustomer}
                     onSave={(v) => update("avgSpendPerCustomer", v)}
                     ariaLabel="客単価"
                   />
                 </InlineFieldRow>
-                <InlineFieldRow label="休日">
+                <InlineFieldRow label="休日" direction="horizontal">
                   <InlineTextField
                     value={profile.holidays}
                     onSave={(v) => update("holidays", v)}
                     ariaLabel="休日"
                   />
                 </InlineFieldRow>
-                <InlineFieldRow label="売上見込">
+                <InlineFieldRow label="売上見込" direction="horizontal">
                   <InlineTextField
                     value={profile.expectedSales}
                     onSave={(v) => update("expectedSales", v)}

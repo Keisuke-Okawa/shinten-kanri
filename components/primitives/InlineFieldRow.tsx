@@ -23,9 +23,19 @@ export type InlineFieldRowProps = {
   label: string;
   /** 値（Inline*Field など） */
   children: React.ReactNode;
+  /** レイアウト方向。"horizontal" でラベルと入力欄を同一行に並べる（デフォルト "vertical"） */
+  direction?: "vertical" | "horizontal";
 };
 
-export function InlineFieldRow({ label, children }: InlineFieldRowProps) {
+export function InlineFieldRow({ label, children, direction = "vertical" }: InlineFieldRowProps) {
+  if (direction === "horizontal") {
+    return (
+      <div className="flex items-center gap-2">
+        <dt className="shrink-0 whitespace-nowrap text-sm text-muted-foreground">{label}</dt>
+        <dd className="min-w-0 flex-1">{children}</dd>
+      </div>
+    );
+  }
   return (
     <div className="flex flex-col gap-1.5">
       <dt className="text-sm text-muted-foreground">{label}</dt>
