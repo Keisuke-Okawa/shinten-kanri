@@ -25,6 +25,7 @@ export function createMinimalStoreProfile(name: string): StoreProfile {
     holidays: "",
     miscCollection: false,
     miscCollectionStart: "",
+    miscBottle: false,
     firstDeliveryDate: "",
     openDate: "",
     smokingPolicy: "禁煙",

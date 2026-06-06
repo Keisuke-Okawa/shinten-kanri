@@ -48,6 +48,7 @@ function StatusToggleGroup({
           onPressedChange={(pressed) => {
             if (pressed) onChange(status);
           }}
+          variant="bordered"
           size="sm"
           aria-label={TASK_STATUS_LABELS[status]}
           className="px-3"

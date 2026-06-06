@@ -38,6 +38,7 @@ function ConditionToggle({
     <Toggle
       pressed={pressed}
       onPressedChange={onPressedChange}
+      variant="bordered"
       size="sm"
       aria-label={label}
       className="px-3"
