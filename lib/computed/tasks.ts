@@ -36,13 +36,17 @@ export function isTaskApplicable(task: Task, profile: StoreProfile): boolean {
   return true;
 }
 
-/** プロフィール条件に基づき表示すべき子タスクを返す */
+/** プロフィール条件に基づき表示すべき子タスクを返す（pinBottom は末尾に固定） */
 export function getVisibleSubtasks(
   subtasks: SubTask[] | undefined,
   profile: StoreProfile,
 ): SubTask[] {
   if (!subtasks) return [];
-  return subtasks.filter((s) => !s.requiresMiscBottle || profile.miscBottle);
+  const visible = subtasks.filter((s) => !s.requiresMiscBottle || profile.miscBottle);
+  return [
+    ...visible.filter((s) => !s.pinBottom),
+    ...visible.filter((s) => s.pinBottom),
+  ];
 }
 
 /** 表示用ステータス（対象外は na） */

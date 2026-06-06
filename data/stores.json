@@ -108,8 +108,8 @@
         "dueDate": "2026-07-15",
         "subtasks": [
           { "id": "t1-9-1", "name": "エビデンス取得", "completed": false },
-          { "id": "t1-9-3", "name": "コード作成申請", "completed": false },
-          { "id": "t1-9-2", "name": "雑瓶エビデンス取得", "completed": false, "requiresMiscBottle": true }
+          { "id": "t1-9-2", "name": "雑瓶エビデンス取得", "completed": false, "requiresMiscBottle": true },
+          { "id": "t1-9-3", "name": "コード作成申請", "completed": false, "pinBottom": true }
         ]
       }
     ]

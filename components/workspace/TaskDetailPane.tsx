@@ -212,7 +212,9 @@ function StandardTaskDetail({
       name,
       completed: false,
     };
-    onUpdateTask({ subtasks: [...subtasks, newSubtask] });
+    const pinned = subtasks.filter((s) => s.pinBottom);
+    const rest = subtasks.filter((s) => !s.pinBottom);
+    onUpdateTask({ subtasks: [...rest, newSubtask, ...pinned] });
     setNewSubtaskName("");
   }
 

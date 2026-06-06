@@ -97,6 +97,7 @@ export const subTaskSchema = z.object({
   name: z.string(),
   completed: z.boolean(),
   requiresMiscBottle: z.boolean().optional(),
+  pinBottom: z.boolean().optional(),
 });
 export type SubTask = z.infer<typeof subTaskSchema>;
 
