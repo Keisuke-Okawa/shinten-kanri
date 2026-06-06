@@ -26,6 +26,7 @@ import {
   getStoreTrafficLight,
   getVisibleSubtasks,
   shouldAutoComplete,
+  sortTasksForDisplay,
 } from "@/lib/computed/tasks";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { GlobalHeader } from "@/components/workspace/GlobalHeader";
@@ -154,20 +155,28 @@ export function Workspace({ initialStores, workspace }: WorkspaceProps) {
 
   const taskRows = useMemo(
     () =>
-      activeStore.tasks.map((task) => {
-        const displayStatus = getDisplayTaskStatus(task, activeStore.profile);
-        return {
-          ...task,
-          subtasks: getVisibleSubtasks(task.subtasks, activeStore.profile),
-          displayStatus,
-          trafficLight: deriveTrafficLight(task.dueDate, displayStatus),
-        };
-      }),
+      sortTasksForDisplay(
+        activeStore.tasks.map((task) => {
+          const displayStatus = getDisplayTaskStatus(task, activeStore.profile);
+          return {
+            ...task,
+            subtasks: getVisibleSubtasks(task.subtasks, activeStore.profile),
+            displayStatus,
+            trafficLight: deriveTrafficLight(task.dueDate, displayStatus),
+          };
+        }),
+      ),
     [activeStore],
   );
 
-  const selectedTask =
-    activeStore.tasks.find((t) => t.id === selectedTaskId) ?? null;
+  const selectedTask = useMemo(() => {
+    const task = activeStore.tasks.find((t) => t.id === selectedTaskId) ?? null;
+    if (!task) return null;
+    return {
+      ...task,
+      subtasks: getVisibleSubtasks(task.subtasks, activeStore.profile),
+    };
+  }, [activeStore, selectedTaskId]);
 
   return (
     <SidebarProvider

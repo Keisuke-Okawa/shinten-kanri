@@ -28,7 +28,8 @@ const TASK_STATUS_KEYS = ["notStarted", "inProgress", "completed"] as const;
 type EditableTaskStatusKey = (typeof TASK_STATUS_KEYS)[number];
 
 /** 号車報告書のラベル幅。入力欄・トグルの左端を縦一列に揃える */
-const VR_FIELD_LABEL_WIDTH = "w-28";
+/** 最長ラベル「現金or振込」基準。1文字分（0.875rem）左寄せ */
+const VR_FIELD_LABEL_WIDTH = "w-[6.125rem]";
 
 function OptionToggleGroup<T extends string>({
   value,
@@ -496,14 +497,14 @@ function VehicleReportDetail({
             />
           </InlineFieldRow>
           <InlineFieldRow
-            label="サーバー設置日"
+            label="サーバー設置"
             direction="horizontal"
             labelWidth={VR_FIELD_LABEL_WIDTH}
           >
             <InlineDateField
               value={profile.serverInstallDate}
               onSave={(v) => update("serverInstallDate", v)}
-              ariaLabel="サーバー設置日"
+              ariaLabel="サーバー設置"
             />
           </InlineFieldRow>
           <InlineFieldRow

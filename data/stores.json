@@ -67,20 +67,15 @@
         "requiresWebOrder": true
       },
       {
-        "id": "t1-3",
-        "name": "決裁取得",
-        "kind": "standard",
-        "status": "completed",
-        "dueDate": "2026-05-20",
-        "requiresCongratulatoryFlowers": true
-      },
-      {
         "id": "t1-4",
         "name": "祝花手配",
         "kind": "standard",
         "status": "inProgress",
         "dueDate": "2026-06-10",
-        "requiresCongratulatoryFlowers": true
+        "requiresCongratulatoryFlowers": true,
+        "subtasks": [
+          { "id": "t1-4-1", "name": "決裁取得", "completed": false }
+        ]
       },
       {
         "id": "t1-5",
@@ -89,13 +84,6 @@
         "status": "notStarted",
         "dueDate": "2026-06-08",
         "requiresKeyCustody": true
-      },
-      {
-        "id": "t1-6",
-        "name": "サーバー設置",
-        "kind": "standard",
-        "status": "completed",
-        "dueDate": "2026-06-08"
       },
       {
         "id": "t1-7",
@@ -120,6 +108,7 @@
         "dueDate": "2025-05-20",
         "subtasks": [
           { "id": "t1-9-1", "name": "エビデンス取得", "completed": false },
+          { "id": "t1-9-3", "name": "コード作成申請", "completed": false },
           { "id": "t1-9-2", "name": "雑瓶エビデンス取得", "completed": false, "requiresMiscBottle": true }
         ]
       }

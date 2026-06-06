@@ -50,6 +50,58 @@ export function getDisplayTaskStatus(
   return task.status;
 }
 
+const PROGRESS_RANK: Record<TaskStatusKey, number> = {
+  inProgress: 0,
+  notStarted: 1,
+  completed: 2,
+  na: 3,
+};
+
+const URGENCY_RANK: Record<TrafficLight, number> = {
+  red: 0,
+  yellow: 1,
+  green: 2,
+};
+
+function getUrgencyRank(trafficLight: TrafficLight | null): number {
+  if (trafficLight === null) return URGENCY_RANK.green + 1;
+  return URGENCY_RANK[trafficLight];
+}
+
+/** Pane 3 表示用: 進行度 > 緊急度 で並べ替え */
+export function compareTasksForDisplay(
+  a: {
+    displayStatus: TaskStatusKey;
+    trafficLight: TrafficLight | null;
+    dueDate: string;
+  },
+  b: {
+    displayStatus: TaskStatusKey;
+    trafficLight: TrafficLight | null;
+    dueDate: string;
+  },
+): number {
+  const progressDiff =
+    PROGRESS_RANK[a.displayStatus] - PROGRESS_RANK[b.displayStatus];
+  if (progressDiff !== 0) return progressDiff;
+
+  const urgencyDiff =
+    getUrgencyRank(a.trafficLight) - getUrgencyRank(b.trafficLight);
+  if (urgencyDiff !== 0) return urgencyDiff;
+
+  return a.dueDate.localeCompare(b.dueDate);
+}
+
+export function sortTasksForDisplay<
+  T extends {
+    displayStatus: TaskStatusKey;
+    trafficLight: TrafficLight | null;
+    dueDate: string;
+  },
+>(tasks: T[]): T[] {
+  return [...tasks].sort(compareTasksForDisplay);
+}
+
 /** 期日から信号機を派生（完了・対象外は null） */
 export function deriveTrafficLight(
   dueDate: string,
