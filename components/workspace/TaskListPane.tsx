@@ -52,7 +52,9 @@ function statusBadgeVariant(
 }
 
 function formatDueDate(date: string): string {
-  return date.replace(/-/g, "/");
+  const parts = date.split("-");
+  if (parts.length !== 3) return date;
+  return `${parts[1]}/${parts[2]}`;
 }
 
 const STATUS_OPTIONS = ["未着手", "進行中"] as const;
@@ -152,20 +154,17 @@ export function TaskListPane({
     <section className="flex min-w-0 flex-1 flex-col bg-canvas">
       <ScrollArea className="min-h-0 flex-1">
         <div className="mx-auto flex max-w-3xl flex-col gap-2 px-6 py-6">
-          {tasks.map((task) => {
+          {tasks.filter((task) => task.displayStatus !== "na").map((task) => {
             const active = task.id === selectedTaskId;
-            const isNa = task.displayStatus === "na";
             return (
               <button
                 key={task.id}
                 type="button"
-                onClick={() => !isNa && onSelectTask(task.id)}
-                disabled={isNa}
+                onClick={() => onSelectTask(task.id)}
                 className={cn(
                   "flex w-full items-center gap-3 rounded-lg border border-border bg-card px-4 py-3 text-left transition-colors",
                   active && "border-primary/40 bg-primary/5",
-                  isNa && "cursor-not-allowed opacity-50",
-                  !isNa && !active && "hover:bg-muted/50",
+                  !active && "hover:bg-muted/50",
                 )}
               >
                 {task.trafficLight ? (
@@ -191,14 +190,12 @@ export function TaskListPane({
                       </span>
                     )}
                   </div>
-                  {!isNa && (
-                    <span className="text-xs text-muted-foreground tabular-nums">
-                      期日 {formatDueDate(task.dueDate)}
-                      {task.trafficLight && (
-                        <> · {TRAFFIC_LIGHT_LABELS[task.trafficLight]}</>
-                      )}
-                    </span>
-                  )}
+                  <span className="text-xs text-muted-foreground tabular-nums">
+                    期日 {formatDueDate(task.dueDate)}
+                    {task.trafficLight && (
+                      <> · {TRAFFIC_LIGHT_LABELS[task.trafficLight]}</>
+                    )}
+                  </span>
                 </div>
 
                 <Badge
