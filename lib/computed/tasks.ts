@@ -7,6 +7,10 @@ import {
   type TaskStatusKey,
   type TrafficLight,
 } from "@/lib/schema";
+import {
+  DEFAULT_URGENCY_SETTINGS,
+  type UrgencySettings,
+} from "@/lib/urgencySettings";
 
 /** 配送開始時刻が出勤時刻より前なら鍵タスクが必要 */
 export function needsKeyCustody(profile: StoreProfile): boolean {
@@ -106,6 +110,7 @@ export function sortTasksForDisplay<
 export function deriveTrafficLight(
   dueDate: string,
   status: TaskStatusKey,
+  settings: UrgencySettings = DEFAULT_URGENCY_SETTINGS,
   today = new Date(),
 ): TrafficLight | null {
   if (status === "completed" || status === "na") return null;
@@ -119,8 +124,8 @@ export function deriveTrafficLight(
   );
 
   if (diffDays < 0) return "red";
-  if (diffDays <= 3) return "red";
-  if (diffDays <= 7) return "yellow";
+  if (diffDays <= settings.redDays) return "red";
+  if (diffDays <= settings.yellowDays) return "yellow";
   return "green";
 }
 
@@ -147,12 +152,13 @@ export function getStoreProgressPercent(store: Store): number {
 /** 店舗全体の代表信号機（最も緊急度が高い色） */
 export function getStoreTrafficLight(
   store: Store,
+  settings: UrgencySettings = DEFAULT_URGENCY_SETTINGS,
   today = new Date(),
 ): TrafficLight {
   const lights = store.tasks
     .map((task) => {
       const status = getDisplayTaskStatus(task, store.profile);
-      return deriveTrafficLight(task.dueDate, status, today);
+      return deriveTrafficLight(task.dueDate, status, settings, today);
     })
     .filter((l): l is TrafficLight => l !== null);
 

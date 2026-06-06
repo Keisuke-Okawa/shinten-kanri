@@ -28,6 +28,11 @@ import {
   shouldAutoComplete,
   sortTasksForDisplay,
 } from "@/lib/computed/tasks";
+import {
+  loadUrgencySettings,
+  saveUrgencySettings,
+  type UrgencySettings,
+} from "@/lib/urgencySettings";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { GlobalHeader } from "@/components/workspace/GlobalHeader";
 import { StoreListPane } from "@/components/workspace/StoreListPane";
@@ -45,6 +50,14 @@ export function Workspace({ initialStores, workspace }: WorkspaceProps) {
   const [selectedStoreId, setSelectedStoreId] = useState<string>("s1");
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>("t1-1");
   const [pane4ManuallyClosed, setPane4ManuallyClosed] = useState(false);
+  const [urgencySettings, setUrgencySettings] = useState<UrgencySettings>(
+    loadUrgencySettings,
+  );
+
+  const handleSaveUrgencySettings = useCallback((s: UrgencySettings) => {
+    saveUrgencySettings(s);
+    setUrgencySettings(s);
+  }, []);
 
   const activeStore =
     stores.find((s) => s.id === selectedStoreId) ?? stores[0];
@@ -105,6 +118,20 @@ export function Workspace({ initialStores, workspace }: WorkspaceProps) {
     [selectedStoreId, selectedTaskId],
   );
 
+  const addTask = useCallback(
+    (taskData: Omit<Task, "id">) => {
+      const id = `${selectedStoreId}-${Date.now()}`;
+      setStores((prev) =>
+        prev.map((s) =>
+          s.id === selectedStoreId
+            ? { ...s, tasks: [...s.tasks, { id, ...taskData }] }
+            : s,
+        ),
+      );
+    },
+    [selectedStoreId],
+  );
+
   const updateProfilePartial = useCallback(
     (updates: Partial<StoreProfile>) => {
       setProfile((prev) => ({ ...prev, ...updates }));
@@ -147,11 +174,11 @@ export function Workspace({ initialStores, workspace }: WorkspaceProps) {
           name: s.profile.name,
           openDate: s.profile.openDate,
           progressPercent: getStoreProgressPercent(s),
-          storeTrafficLight: getStoreTrafficLight(s),
+          storeTrafficLight: getStoreTrafficLight(s, urgencySettings),
           autoCompleted: shouldAutoComplete(s),
         })),
     }));
-  }, [stores]);
+  }, [stores, urgencySettings]);
 
   const taskRows = useMemo(
     () =>
@@ -162,11 +189,11 @@ export function Workspace({ initialStores, workspace }: WorkspaceProps) {
             ...task,
             subtasks: getVisibleSubtasks(task.subtasks, activeStore.profile),
             displayStatus,
-            trafficLight: deriveTrafficLight(task.dueDate, displayStatus),
+            trafficLight: deriveTrafficLight(task.dueDate, displayStatus, urgencySettings),
           };
         }),
       ),
-    [activeStore],
+    [activeStore, urgencySettings],
   );
 
   const selectedTask = useMemo(() => {
@@ -191,7 +218,11 @@ export function Workspace({ initialStores, workspace }: WorkspaceProps) {
         onMoveStore={moveStore}
       />
       <SidebarInset className="flex min-w-0 flex-col bg-background">
-        <GlobalHeader storeName={activeStore.profile.name} />
+        <GlobalHeader
+            storeName={activeStore.profile.name}
+            urgencySettings={urgencySettings}
+            onSaveUrgencySettings={handleSaveUrgencySettings}
+          />
         <div className="flex min-h-0 flex-1">
           <StoreProfilePane
             profile={activeStore.profile}
@@ -201,6 +232,7 @@ export function Workspace({ initialStores, workspace }: WorkspaceProps) {
             tasks={taskRows}
             selectedTaskId={selectedTaskId}
             onSelectTask={selectTask}
+            onAddTask={addTask}
           />
           <TaskDetailPane
             task={selectedTask}
