@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { needsKeyCustody } from "@/lib/computed/tasks";
 import { type StoreProfile } from "@/lib/schema";
 import { PANE2_SECTION } from "@/lib/labels";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -55,6 +56,21 @@ export function StoreProfilePane({
 }: StoreProfilePaneProps) {
   const update = <K extends keyof StoreProfile>(key: K, value: StoreProfile[K]) =>
     setProfile((prev) => ({ ...prev, [key]: value }));
+
+  /** 時間フィールド変更時に keyCustody を自動同期 */
+  const updateTimeWithKeySync = (
+    key:
+      | "deliveryTimeStart"
+      | "deliveryTimeEnd"
+      | "customerWorkStartWeekday"
+      | "customerWorkStartWeekend",
+    v: string,
+  ) => {
+    setProfile((prev) => {
+      const updated = { ...prev, [key]: v };
+      return { ...updated, keyCustody: needsKeyCustody(updated) };
+    });
+  };
 
   return (
     <section className="flex w-[400px] shrink-0 flex-col border-r border-border bg-background">
@@ -214,13 +230,13 @@ export function StoreProfilePane({
                 <span />
                 <InlineTimeField
                   value={profile.deliveryTimeStart}
-                  onSave={(v) => update("deliveryTimeStart", v)}
+                  onSave={(v) => updateTimeWithKeySync("deliveryTimeStart", v)}
                   ariaLabel="配送開始時間"
                 />
                 <span className="text-center text-muted-foreground">〜</span>
                 <InlineTimeField
                   value={profile.deliveryTimeEnd}
-                  onSave={(v) => update("deliveryTimeEnd", v)}
+                  onSave={(v) => updateTimeWithKeySync("deliveryTimeEnd", v)}
                   ariaLabel="配送終了時間"
                 />
                 {/* 出勤時間 */}
@@ -228,13 +244,13 @@ export function StoreProfilePane({
                 <span className="shrink-0 text-xs text-muted-foreground">平日</span>
                 <InlineTimeField
                   value={profile.customerWorkStartWeekday}
-                  onSave={(v) => update("customerWorkStartWeekday", v)}
+                  onSave={(v) => updateTimeWithKeySync("customerWorkStartWeekday", v)}
                   ariaLabel="出勤時間（平日）"
                 />
                 <span className="text-center text-xs text-muted-foreground">土日</span>
                 <InlineTimeField
                   value={profile.customerWorkStartWeekend}
-                  onSave={(v) => update("customerWorkStartWeekend", v)}
+                  onSave={(v) => updateTimeWithKeySync("customerWorkStartWeekend", v)}
                   ariaLabel="出勤時間（土日）"
                 />
               </div>

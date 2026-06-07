@@ -12,12 +12,15 @@ import {
   type UrgencySettings,
 } from "@/lib/urgencySettings";
 
-/** 配送開始時刻が出勤時刻より前なら鍵タスクが必要 */
+/** 出勤時間（平日 or 土日）が配送終了時刻より1分でも早ければ鍵タスクが必要 */
 export function needsKeyCustody(profile: StoreProfile): boolean {
-  const deliveryStart = parseTime(profile.deliveryTimeStart);
-  const workStart = parseTime(profile.customerWorkStartWeekday);
-  if (deliveryStart === null || workStart === null) return false;
-  return deliveryStart < workStart;
+  const deliveryEnd = parseTime(profile.deliveryTimeEnd);
+  if (deliveryEnd === null) return false;
+  const workWeekday = parseTime(profile.customerWorkStartWeekday);
+  const workWeekend = parseTime(profile.customerWorkStartWeekend);
+  if (workWeekday !== null && workWeekday < deliveryEnd) return true;
+  if (workWeekend !== null && workWeekend < deliveryEnd) return true;
+  return false;
 }
 
 function parseTime(time: string): number | null {
@@ -32,7 +35,7 @@ export function isTaskApplicable(task: Task, profile: StoreProfile): boolean {
   if (task.requiresProxyDelivery && !profile.proxyDelivery) return false;
   if (task.requiresCongratulatoryFlowers && !profile.congratulatoryFlowers)
     return false;
-  if (task.requiresKeyCustody && !needsKeyCustody(profile) && !profile.keyCustody) return false;
+  if (task.requiresKeyCustody && !profile.keyCustody) return false;
   if (task.requiresSponsorship && !profile.sponsorship) return false;
   if (task.requiresNewStore && !profile.newStore) return false;
   return true;
