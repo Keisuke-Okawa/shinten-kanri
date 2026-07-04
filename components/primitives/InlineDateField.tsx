@@ -73,6 +73,7 @@ function FreeTextDateField({
           }}
           placeholder="未設定"
           aria-label={ariaLabel}
+          autoComplete="off"
           className="min-w-0 flex-1 bg-transparent pr-2 text-sm text-foreground outline-none placeholder:text-muted-foreground"
         />
       </div>

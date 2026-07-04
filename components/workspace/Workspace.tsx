@@ -344,6 +344,7 @@ export function Workspace({
           />
         <div className="flex min-h-0 flex-1">
           <StoreProfilePane
+            key={activeStore.id}
             profile={activeStore.profile}
             setProfile={setProfile}
           />
