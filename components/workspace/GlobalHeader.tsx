@@ -127,7 +127,6 @@ function SettingsForm({
       <div className="flex flex-col gap-3">
         <SectionLabel>背景カラー</SectionLabel>
         <div className="flex flex-col gap-2">
-          <span className="text-sm text-muted-foreground">カラー</span>
           <div className="flex gap-2">
             {BG_COLOR_PRESETS.map((preset: BgColorPreset) => (
               <button
@@ -138,12 +137,11 @@ function SettingsForm({
                 onClick={() => onBgColorChange(preset.id)}
                 className="size-7 rounded-full transition-shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
                 style={{
-                  backgroundColor: preset.swatch,
+                  backgroundColor: preset.border,
                   boxShadow:
                     bgColorId === preset.id
-                      ? "0 0 0 2px white, 0 0 0 4px currentColor"
-                      : undefined,
-                  color: preset.swatch,
+                      ? `0 0 0 2px white, 0 0 0 4px ${preset.sidebarBorder}`
+                      : `inset 0 0 0 1px ${preset.sidebarBorder}`,
                 }}
               />
             ))}
