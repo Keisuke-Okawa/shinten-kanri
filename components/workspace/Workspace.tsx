@@ -92,6 +92,14 @@ export function Workspace({
   const activeStore =
     stores.find((s) => s.id === selectedStoreId) ?? stores[0];
 
+  if (!activeStore) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background text-foreground">
+        <p className="text-muted-foreground">データを読み込んでいます...</p>
+      </div>
+    );
+  }
+
   const pane4Open = selectedTaskId !== null && !pane4ManuallyClosed;
 
   const setProfile = useCallback<React.Dispatch<React.SetStateAction<StoreProfile>>>(
