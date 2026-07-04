@@ -24,6 +24,7 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Toggle } from "@/components/ui/toggle";
+import { InlineDateField } from "@/components/primitives";
 
 // ── デフォルトプロフィール ──────────────────────────────────────
 // WEB・雑瓶 = ON、それ以外のトグルは OFF、テキストはすべて空
@@ -292,19 +293,23 @@ export function AddStoreDialog({
                   {/* オープン日 + 初回納品日 */}
                   <div className="grid grid-cols-2 gap-4">
                     <Field>
-                      <FieldLabel htmlFor="add-open-date">オープン日</FieldLabel>
-                      <Input
-                        id="add-open-date"
+                      <FieldLabel>オープン日</FieldLabel>
+                      <InlineDateField
+                        key={`open-date-${open}`}
                         value={profile.openDate}
-                        onChange={(e) => update("openDate", e.target.value)}
+                        onSave={(v) => update("openDate", v)}
+                        ariaLabel="オープン日"
+                        freeText
                       />
                     </Field>
                     <Field>
-                      <FieldLabel htmlFor="add-first-delivery">初回納品日</FieldLabel>
-                      <Input
-                        id="add-first-delivery"
+                      <FieldLabel>初回納品日</FieldLabel>
+                      <InlineDateField
+                        key={`first-delivery-${open}`}
                         value={profile.firstDeliveryDate}
-                        onChange={(e) => update("firstDeliveryDate", e.target.value)}
+                        onSave={(v) => update("firstDeliveryDate", v)}
+                        ariaLabel="初回納品日"
+                        freeText
                       />
                     </Field>
                   </div>
@@ -312,19 +317,23 @@ export function AddStoreDialog({
                   {/* サーバー設置日 + 引き渡し日 */}
                   <div className="grid grid-cols-2 gap-4">
                     <Field>
-                      <FieldLabel htmlFor="add-server-date">サーバー設置日</FieldLabel>
-                      <Input
-                        id="add-server-date"
+                      <FieldLabel>サーバー設置日</FieldLabel>
+                      <InlineDateField
+                        key={`server-date-${open}`}
                         value={profile.serverInstallDate}
-                        onChange={(e) => update("serverInstallDate", e.target.value)}
+                        onSave={(v) => update("serverInstallDate", v)}
+                        ariaLabel="サーバー設置日"
+                        freeText
                       />
                     </Field>
                     <Field>
-                      <FieldLabel htmlFor="add-handover-date">引き渡し日</FieldLabel>
-                      <Input
-                        id="add-handover-date"
+                      <FieldLabel>引き渡し日</FieldLabel>
+                      <InlineDateField
+                        key={`handover-date-${open}`}
                         value={profile.handoverDate}
-                        onChange={(e) => update("handoverDate", e.target.value)}
+                        onSave={(v) => update("handoverDate", v)}
+                        ariaLabel="引き渡し日"
+                        freeText
                       />
                     </Field>
                   </div>
