@@ -70,7 +70,7 @@ export function SortableStoreRow({
           "outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring/50",
           selected
             ? "border-primary/40 bg-primary/5 text-sidebar-accent-foreground"
-            : "border-transparent hover:bg-sidebar-accent/60 text-sidebar-foreground",
+            : "border-transparent hover:border-primary/40 hover:bg-primary/5 text-sidebar-foreground",
         )}
       >
         {/* 行 1: グリップ + 信号機ドット + 店舗名 */}
