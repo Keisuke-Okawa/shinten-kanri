@@ -189,11 +189,21 @@ export function shouldAutoComplete(store: Store, today = new Date()): boolean {
   return applicable.every((t) => t.status === "completed");
 }
 
-/** 新規追加時のデフォルトステータスを導出（手動ドラッグ前の初期値） */
+/**
+ * タスクの完了状態からペイン1のステータスを自動導出する。
+ *
+ * - 対象タスク全て完了         → "completed"
+ * - 対象タスク全て未着手       → "notStarted"
+ * - 未着手 + 進行中/完了が混在 → "inProgress"
+ *
+ * 対象タスクが 0 件の場合は "notStarted" とする。
+ */
 export function deriveStoreStatus(store: Store): StoreStatusKey {
   const applicable = store.tasks.filter((t) =>
     isTaskApplicable(t, store.profile),
   );
-  if (applicable.some((t) => t.status === "inProgress")) return "inProgress";
-  return "notStarted";
+  if (applicable.length === 0) return "notStarted";
+  if (applicable.every((t) => t.status === "completed")) return "completed";
+  if (applicable.every((t) => t.status === "notStarted")) return "notStarted";
+  return "inProgress";
 }

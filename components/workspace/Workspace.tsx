@@ -22,12 +22,12 @@ import {
 import { generateDefaultTasks } from "@/lib/defaultTasks";
 import { STORE_STATUS_LABELS } from "@/lib/labels";
 import {
+  deriveStoreStatus,
   deriveTrafficLight,
   getDisplayTaskStatus,
   getStoreProgressPercent,
   getStoreTrafficLight,
   getVisibleSubtasks,
-  shouldAutoComplete,
   sortTasksForDisplay,
 } from "@/lib/computed/tasks";
 import {
@@ -274,13 +274,14 @@ export function Workspace({
     [],
   );
 
-  // 手動ドラッグによるグループ移動。完了の強制ルールが成立している店舗は移動不可。
+  // 手動ドラッグによるグループ移動。自動分類が適用されるため表示には影響しない（DB 同期のみ）。
+  // 完了に自動分類された店舗はドラッグ不可（autoCompleted=true で SortableStoreRow が disabled）。
   const moveStore = useCallback(
     (id: string, toStatus: StoreStatusKey) => {
       setStores((prev) =>
         prev.map((s) => {
           if (s.id !== id) return s;
-          if (shouldAutoComplete(s)) return s;
+          if (deriveStoreStatus(s) === "completed") return s;
           return { ...s, status: toStatus };
         }),
       );
@@ -294,12 +295,7 @@ export function Workspace({
       status,
       label: STORE_STATUS_LABELS[status],
       items: stores
-        .filter((s) => {
-          const effectiveStatus = shouldAutoComplete(s)
-            ? "completed"
-            : s.status;
-          return effectiveStatus === status;
-        })
+        .filter((s) => deriveStoreStatus(s) === status)
         .sort((a, b) =>
           a.profile.openDate.localeCompare(b.profile.openDate),
         )
@@ -309,7 +305,7 @@ export function Workspace({
           openDate: s.profile.openDate,
           progressPercent: getStoreProgressPercent(s),
           storeTrafficLight: getStoreTrafficLight(s, urgencySettings, today),
-          autoCompleted: shouldAutoComplete(s),
+          autoCompleted: deriveStoreStatus(s) === "completed",
         })),
     }));
   }, [stores, urgencySettings, today]);
