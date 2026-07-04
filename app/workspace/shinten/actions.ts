@@ -1,7 +1,7 @@
 'use server';
 
 import { sql } from '@vercel/postgres';
-import { type Store, type StoreStatusKey, type TaskStatusKey } from '@/lib/schema';
+import { type Store, type StoreProfile, type StoreStatusKey, type TaskStatusKey } from '@/lib/schema';
 
 export async function getWorkspaceData(): Promise<Store[]> {
   try {
@@ -112,4 +112,59 @@ export async function updateTaskStatus(taskId: string, status: TaskStatusKey): P
 export async function toggleSubtaskCompleted(subtaskId: string, completed: boolean): Promise<void> {
   const compStr = completed ? 'true' : 'false';
   await sql`UPDATE subtasks SET completed = ${compStr} WHERE id = ${subtaskId};`;
+}
+
+export async function updateStoreProfile(storeId: string, profile: StoreProfile): Promise<void> {
+  const b = (v: boolean) => (v ? 'true' : 'false');
+  await sql`
+    UPDATE store_profiles SET
+      customer_code               = ${profile.customerCode},
+      name                        = ${profile.name},
+      company_name                = ${profile.companyName},
+      business_type               = ${profile.businessType},
+      address                     = ${profile.address},
+      phone                       = ${profile.phone},
+      manager_name                = ${profile.managerName},
+      payment_method              = ${profile.paymentMethod},
+      collection_person           = ${profile.collectionPerson},
+      delivery_time_start         = ${profile.deliveryTimeStart},
+      delivery_time_end           = ${profile.deliveryTimeEnd},
+      has_lunch                   = ${b(profile.hasLunch)},
+      order_method                = ${profile.orderMethod},
+      holidays                    = ${profile.holidays},
+      misc_collection             = ${b(profile.miscCollection)},
+      misc_collection_start       = ${profile.miscCollectionStart},
+      first_delivery_date         = ${profile.firstDeliveryDate},
+      open_date                   = ${profile.openDate},
+      smoking_policy              = ${profile.smokingPolicy},
+      delivery_notes              = ${profile.deliveryNotes},
+      special_notes               = ${profile.specialNotes},
+      invoice_type                = ${profile.invoiceType},
+      server_install_date         = ${profile.serverInstallDate},
+      handover_date               = ${profile.handoverDate},
+      account_change_empty_return = ${b(profile.accountChangeEmptyReturn)},
+      elevator_available          = ${b(profile.elevatorAvailable)},
+      dedicated_entrance          = ${b(profile.dedicatedEntrance)},
+      notes_and_attachments       = ${profile.notesAndAttachments},
+      seat_count                  = ${profile.seatCount},
+      avg_spend_per_customer      = ${profile.avgSpendPerCustomer},
+      expected_sales              = ${profile.expectedSales},
+      web_order                   = ${b(profile.webOrder)},
+      sponsorship                 = ${b(profile.sponsorship)},
+      new_store                   = ${b(profile.newStore)},
+      misc_bottle                 = ${b(profile.miscBottle)},
+      key_custody                 = ${b(profile.keyCustody)},
+      congratulatory_flowers      = ${b(profile.congratulatoryFlowers)},
+      proxy_delivery              = ${b(profile.proxyDelivery)},
+      customer_work_start_weekday = ${profile.customerWorkStartWeekday},
+      customer_work_end_weekday   = ${profile.customerWorkEndWeekday},
+      customer_work_start_weekend = ${profile.customerWorkStartWeekend},
+      customer_work_end_weekend   = ${profile.customerWorkEndWeekend},
+      pane2_memo                  = ${profile.pane2Memo}
+    WHERE store_id = ${storeId};
+  `;
+}
+
+export async function updateTaskDetail(taskId: string, memo: string, dueDate: string): Promise<void> {
+  await sql`UPDATE tasks SET memo = ${memo}, due_date = ${dueDate} WHERE id = ${taskId};`;
 }

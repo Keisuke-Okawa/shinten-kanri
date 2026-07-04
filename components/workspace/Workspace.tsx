@@ -47,6 +47,8 @@ type WorkspaceProps = {
   onSaveStoreStatus?: (storeId: string, status: StoreStatusKey) => Promise<void>;
   onSaveTaskStatus?: (taskId: string, status: TaskStatusKey) => Promise<void>;
   onToggleSubtask?: (subtaskId: string, completed: boolean) => Promise<void>;
+  onSaveProfile?: (storeId: string, profile: StoreProfile) => Promise<void>;
+  onSaveTaskDetail?: (taskId: string, memo: string, dueDate: string) => Promise<void>;
 };
 
 export function Workspace({
@@ -55,6 +57,8 @@ export function Workspace({
   onSaveStoreStatus,
   onSaveTaskStatus,
   onToggleSubtask,
+  onSaveProfile,
+  onSaveTaskDetail,
 }: WorkspaceProps) {
   const [stores, setStores] = useState<Store[]>(initialStores);
   const [selectedStoreId, setSelectedStoreId] = useState<string>("s1");
@@ -92,14 +96,6 @@ export function Workspace({
   const activeStore =
     stores.find((s) => s.id === selectedStoreId) ?? stores[0];
 
-  if (!activeStore) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-background text-foreground">
-        <p className="text-muted-foreground">データを読み込んでいます...</p>
-      </div>
-    );
-  }
-
   const pane4Open = selectedTaskId !== null && !pane4ManuallyClosed;
 
   const setProfile = useCallback<React.Dispatch<React.SetStateAction<StoreProfile>>>(
@@ -134,6 +130,16 @@ export function Workspace({
       // タスクステータス変更を DB に反映
       if (updates.status !== undefined) {
         void onSaveTaskStatus?.(selectedTaskId, updates.status);
+      }
+
+      // メモ・期日変更を DB に反映
+      if (updates.memo !== undefined || updates.dueDate !== undefined) {
+        const currentTask = stores
+          .find((s) => s.id === selectedStoreId)
+          ?.tasks.find((t) => t.id === selectedTaskId);
+        const newMemo = updates.memo ?? currentTask?.memo ?? "";
+        const newDueDate = updates.dueDate ?? currentTask?.dueDate ?? "";
+        void onSaveTaskDetail?.(selectedTaskId, newMemo, newDueDate);
       }
 
       // サブタスクの completed 変更を検知して DB に反映
@@ -194,7 +200,7 @@ export function Workspace({
         }),
       );
     },
-    [selectedStoreId, selectedTaskId, onSaveTaskStatus, onToggleSubtask],
+    [selectedStoreId, selectedTaskId, stores, onSaveTaskStatus, onSaveTaskDetail, onToggleSubtask],
   );
 
   const addTask = useCallback(
@@ -211,11 +217,16 @@ export function Workspace({
     [selectedStoreId],
   );
 
+  // プロフィール変更を state と DB に反映
   const updateProfilePartial = useCallback(
     (updates: Partial<StoreProfile>) => {
-      setProfile((prev) => ({ ...prev, ...updates }));
+      const currentProfile = stores.find((s) => s.id === selectedStoreId)?.profile;
+      if (!currentProfile) return;
+      const newProfile = { ...currentProfile, ...updates };
+      setProfile(newProfile);
+      void onSaveProfile?.(selectedStoreId, newProfile);
     },
-    [setProfile],
+    [selectedStoreId, stores, setProfile, onSaveProfile],
   );
 
   const togglePane4 = useCallback(
@@ -263,23 +274,23 @@ export function Workspace({
     }));
   }, [stores, urgencySettings, today]);
 
-  const taskRows = useMemo(
-    () =>
-      sortTasksForDisplay(
-        activeStore.tasks.map((task) => {
-          const displayStatus = getDisplayTaskStatus(task, activeStore.profile);
-          return {
-            ...task,
-            subtasks: getVisibleSubtasks(task.subtasks, activeStore.profile),
-            displayStatus,
-            trafficLight: deriveTrafficLight(task.dueDate, displayStatus, urgencySettings, today),
-          };
-        }),
-      ),
-    [activeStore, urgencySettings, today],
-  );
+  const taskRows = useMemo(() => {
+    if (!activeStore) return [];
+    return sortTasksForDisplay(
+      activeStore.tasks.map((task) => {
+        const displayStatus = getDisplayTaskStatus(task, activeStore.profile);
+        return {
+          ...task,
+          subtasks: getVisibleSubtasks(task.subtasks, activeStore.profile),
+          displayStatus,
+          trafficLight: deriveTrafficLight(task.dueDate, displayStatus, urgencySettings, today),
+        };
+      }),
+    );
+  }, [activeStore, urgencySettings, today]);
 
   const selectedTask = useMemo(() => {
+    if (!activeStore) return null;
     const task = activeStore.tasks.find((t) => t.id === selectedTaskId) ?? null;
     if (!task) return null;
     return {
@@ -287,6 +298,15 @@ export function Workspace({
       subtasks: getVisibleSubtasks(task.subtasks, activeStore.profile),
     };
   }, [activeStore, selectedTaskId]);
+
+  // DB からデータが取得できなかった場合のフォールバック表示
+  if (!activeStore) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background text-foreground">
+        <p className="text-muted-foreground">データを読み込んでいます...</p>
+      </div>
+    );
+  }
 
   return (
     <SidebarProvider

@@ -5,6 +5,8 @@ import {
   updateStoreStatus,
   updateTaskStatus,
   toggleSubtaskCompleted,
+  updateStoreProfile,
+  updateTaskDetail,
 } from './actions';
 
 export const revalidate = 0;
@@ -19,6 +21,8 @@ export default async function ShintenPage() {
       onSaveStoreStatus={updateStoreStatus}
       onSaveTaskStatus={updateTaskStatus}
       onToggleSubtask={toggleSubtaskCompleted}
+      onSaveProfile={updateStoreProfile}
+      onSaveTaskDetail={updateTaskDetail}
     />
   );
 }
