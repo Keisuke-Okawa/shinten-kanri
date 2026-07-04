@@ -66,11 +66,11 @@ export function SortableStoreRow({
         type="button"
         onClick={() => onSelect(store.id)}
         className={cn(
-          "flex w-full flex-col rounded-md px-2 py-2 text-left transition-colors",
+          "flex w-full flex-col rounded-md border px-2 py-2 text-left transition-colors",
           "outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring/50",
           selected
-            ? "bg-sidebar-accent text-sidebar-accent-foreground"
-            : "hover:bg-sidebar-accent/60 text-sidebar-foreground",
+            ? "border-primary/40 bg-primary/5 text-sidebar-accent-foreground"
+            : "border-transparent hover:bg-sidebar-accent/60 text-sidebar-foreground",
         )}
       >
         {/* 行 1: グリップ + 信号機ドット + 店舗名 */}
