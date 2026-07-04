@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { type StoreProfile } from "@/lib/schema";
 import { PANE2_SECTION } from "@/lib/labels";
@@ -144,6 +144,11 @@ export function AddStoreDialog({
 }: AddStoreDialogProps) {
   const [profile, setProfile] = useState<StoreProfile>(EMPTY_PROFILE);
 
+  // IME変換中フラグ。
+  // macOS では compositionend が keydown より先に発火するため isComposing だけでは
+  // 変換確定のEnterを捕捉できない。compositionstart で立て、keydown でリセットする。
+  const composingRef = useRef(false);
+
   const update = <K extends keyof StoreProfile>(key: K, value: StoreProfile[K]) =>
     setProfile((prev) => ({ ...prev, [key]: value }));
 
@@ -180,14 +185,20 @@ export function AddStoreDialog({
         >
           <div
             className="flex flex-col gap-4 px-6 py-4"
+            onCompositionStart={() => { composingRef.current = true; }}
             onKeyDown={(e) => {
               if (e.key !== "Enter") return;
-              if (e.nativeEvent.isComposing) return;
+              // isComposing: Chrome では変換確定Enterでも true のままなので有効
+              // composingRef: macOS/Safari では compositionend が先に来て
+              //               isComposing が false になっているケースをカバー
+              if (e.nativeEvent.isComposing || composingRef.current) {
+                composingRef.current = false; // 次のEnterは移動を許可する
+                return;
+              }
               const target = e.target as HTMLElement;
               if (target.tagName !== "INPUT") return;
               e.preventDefault();
-              const form = e.currentTarget;
-              focusNextInput(form, target);
+              focusNextInput(e.currentTarget, target);
             }}
           >
             {/* ── 基本情報 ── */}
