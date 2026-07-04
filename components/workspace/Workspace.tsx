@@ -348,15 +348,20 @@ export function Workspace({
     );
   }
 
-  const bgBackground =
-    BG_COLOR_PRESETS.find((p) => p.id === bgColorId)?.background ??
-    BG_COLOR_PRESETS[0].background;
+  const bgPreset =
+    BG_COLOR_PRESETS.find((p) => p.id === bgColorId) ?? BG_COLOR_PRESETS[0];
 
   return (
     <SidebarProvider
       defaultOpen
       className="h-screen w-full overflow-hidden bg-background text-foreground"
-      style={{ "--background": bgBackground } as React.CSSProperties}
+      style={
+        {
+          "--background": bgPreset.background,
+          "--sidebar": bgPreset.sidebar,
+          "--canvas": bgPreset.canvas,
+        } as React.CSSProperties
+      }
     >
       <StoreListPane
         workspaceName={workspace.name}
