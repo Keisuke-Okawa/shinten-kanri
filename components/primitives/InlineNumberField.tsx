@@ -11,6 +11,8 @@
  *   ""       → ""（空はそのまま）
  */
 
+import { useRef } from "react";
+
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
@@ -35,6 +37,7 @@ export function InlineNumberField({
   placeholder,
   className,
 }: InlineNumberFieldProps) {
+  const composingRef = useRef(false);
   const formatted = formatWithComma(value);
 
   const save = (raw: string) => {
@@ -48,9 +51,14 @@ export function InlineNumberField({
       defaultValue={formatted}
       placeholder={placeholder ?? "未設定"}
       aria-label={ariaLabel}
+      onCompositionStart={() => { composingRef.current = true; }}
       onBlur={(e) => save(e.target.value)}
       onKeyDown={(e) => {
         if (e.key === "Enter") {
+          if (e.nativeEvent.isComposing || composingRef.current) {
+            composingRef.current = false;
+            return;
+          }
           (e.target as HTMLInputElement).blur();
         } else if (e.key === "Escape") {
           (e.target as HTMLInputElement).value = formatted;

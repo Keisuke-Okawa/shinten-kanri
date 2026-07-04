@@ -13,6 +13,8 @@
  * 雛形では候補者の「氏名・採用担当・連絡先・希望年収（min/max）」等で再利用。
  */
 
+import { useRef } from "react";
+
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
@@ -45,6 +47,8 @@ export function InlineTextField({
   autoComplete,
   autoFocus,
 }: InlineTextFieldProps) {
+  const composingRef = useRef(false);
+
   return (
     <Input
       type={inputType}
@@ -53,11 +57,17 @@ export function InlineTextField({
       aria-label={ariaLabel}
       autoComplete={autoComplete}
       autoFocus={autoFocus}
+      onCompositionStart={() => { composingRef.current = true; }}
       onBlur={(e) => {
         if (e.target.value !== value) onSave(e.target.value);
       }}
       onKeyDown={(e) => {
         if (e.key === "Enter") {
+          // IME 変換確定の Enter は無視（次の Enter でフォーカス移動）
+          if (e.nativeEvent.isComposing || composingRef.current) {
+            composingRef.current = false;
+            return;
+          }
           (e.target as HTMLInputElement).blur();
         } else if (e.key === "Escape") {
           (e.target as HTMLInputElement).value = value;

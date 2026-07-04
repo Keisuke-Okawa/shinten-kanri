@@ -15,7 +15,7 @@
  *   - カレンダー選択: 「M月D日」形式に変換して保存
  */
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Calendar as CalendarIcon } from "lucide-react";
 
 import { Calendar } from "@/components/ui/calendar";
@@ -48,6 +48,7 @@ function FreeTextDateField({
   const displayValue = formatDisplayDate(value) || value;
   const [inputVal, setInputVal] = useState(displayValue);
   const [open, setOpen] = useState(false);
+  const composingRef = useRef(false);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -64,8 +65,15 @@ function FreeTextDateField({
           onBlur={() => {
             if (inputVal !== value) onSave(inputVal);
           }}
+          onCompositionStart={() => { composingRef.current = true; }}
           onKeyDown={(e) => {
-            if (e.key === "Enter") e.currentTarget.blur();
+            if (e.key === "Enter") {
+              if (e.nativeEvent.isComposing || composingRef.current) {
+                composingRef.current = false;
+                return;
+              }
+              e.currentTarget.blur();
+            }
             if (e.key === "Escape") {
               setInputVal(displayValue);
               e.currentTarget.blur();
