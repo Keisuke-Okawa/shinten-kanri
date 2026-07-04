@@ -8,6 +8,7 @@ import {
   updateStoreProfile,
   updateTaskDetail,
   createStore,
+  deleteStore,
 } from './actions';
 
 export const revalidate = 0;
@@ -25,6 +26,7 @@ export default async function ShintenPage() {
       onSaveProfile={updateStoreProfile}
       onSaveTaskDetail={updateTaskDetail}
       onAddStore={createStore}
+      onDeleteStore={deleteStore}
     />
   );
 }

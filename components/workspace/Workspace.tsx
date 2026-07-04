@@ -51,6 +51,7 @@ type WorkspaceProps = {
   onSaveProfile?: (storeId: string, profile: StoreProfile) => Promise<void>;
   onSaveTaskDetail?: (taskId: string, memo: string, dueDate: string) => Promise<void>;
   onAddStore?: (id: string, profile: StoreProfile) => Promise<void>;
+  onDeleteStore?: (id: string) => Promise<void>;
 };
 
 export function Workspace({
@@ -62,6 +63,7 @@ export function Workspace({
   onSaveProfile,
   onSaveTaskDetail,
   onAddStore,
+  onDeleteStore,
 }: WorkspaceProps) {
   const [stores, setStores] = useState<Store[]>(initialStores);
   const [selectedStoreId, setSelectedStoreId] = useState<string>("s1");
@@ -232,6 +234,18 @@ export function Workspace({
     [selectStore, onAddStore],
   );
 
+  const deleteStore = useCallback(
+    (storeId: string) => {
+      const remaining = stores.filter((s) => s.id !== storeId);
+      if (storeId === selectedStoreId && remaining.length > 0) {
+        selectStore(remaining[0].id);
+      }
+      setStores(remaining);
+      void onDeleteStore?.(storeId);
+    },
+    [stores, selectedStoreId, selectStore, onDeleteStore],
+  );
+
   // プロフィール変更を state と DB に反映
   const updateProfilePartial = useCallback(
     (updates: Partial<StoreProfile>) => {
@@ -347,6 +361,7 @@ export function Workspace({
             key={activeStore.id}
             profile={activeStore.profile}
             setProfile={setProfile}
+            onDeleteStore={() => deleteStore(activeStore.id)}
           />
           <TaskListPane
             tasks={taskRows}

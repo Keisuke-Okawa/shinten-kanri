@@ -1,14 +1,27 @@
 "use client";
 
+import { Trash2 } from "lucide-react";
+
 import { cn } from "@/lib/utils";
 import { needsKeyCustody } from "@/lib/computed/tasks";
 import { type StoreProfile } from "@/lib/schema";
 import { PANE2_SECTION } from "@/lib/labels";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Toggle } from "@/components/ui/toggle";
 import {
   Card,
+  CardAction,
   CardContent,
   CardHeader,
   CardTitle,
@@ -25,6 +38,7 @@ import {
 type StoreProfilePaneProps = {
   profile: StoreProfile;
   setProfile: React.Dispatch<React.SetStateAction<StoreProfile>>;
+  onDeleteStore: () => void;
 };
 
 function ConditionToggle({
@@ -53,6 +67,7 @@ function ConditionToggle({
 export function StoreProfilePane({
   profile,
   setProfile,
+  onDeleteStore,
 }: StoreProfilePaneProps) {
   const update = <K extends keyof StoreProfile>(key: K, value: StoreProfile[K]) =>
     setProfile((prev) => ({ ...prev, [key]: value }));
@@ -73,6 +88,7 @@ export function StoreProfilePane({
   };
 
   return (
+    <AlertDialog>
     <section className="flex w-[400px] shrink-0 flex-col border-r border-border bg-background">
       <ScrollArea className="min-h-0 flex-1">
         <div className="flex flex-col gap-4 p-4">
@@ -80,6 +96,14 @@ export function StoreProfilePane({
           <Card>
             <CardHeader className="pb-2">
               <CardTitle>{PANE2_SECTION.basic}</CardTitle>
+              <CardAction>
+                <AlertDialogTrigger
+                  aria-label="店舗を削除"
+                  className="flex size-7 items-center justify-center rounded-md text-muted-foreground/40 outline-none transition-colors hover:bg-destructive/10 hover:text-destructive focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <Trash2 className="size-4" />
+                </AlertDialogTrigger>
+              </CardAction>
             </CardHeader>
             <CardContent className="flex flex-col gap-2.5">
               <InlineFieldRow label="店名" direction="horizontal">
@@ -273,6 +297,22 @@ export function StoreProfilePane({
         </div>
       </ScrollArea>
     </section>
+
+    <AlertDialogContent size="sm">
+      <AlertDialogHeader>
+        <AlertDialogTitle>この店舗を削除しますか？</AlertDialogTitle>
+        <AlertDialogDescription>
+          「{profile.name}」を削除します。この操作は取り消せません。
+        </AlertDialogDescription>
+      </AlertDialogHeader>
+      <AlertDialogFooter>
+        <AlertDialogCancel>いいえ</AlertDialogCancel>
+        <AlertDialogCancel variant="destructive" onClick={onDeleteStore}>
+          はい
+        </AlertDialogCancel>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+    </AlertDialog>
   );
 }
 
