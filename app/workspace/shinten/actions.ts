@@ -2,6 +2,7 @@
 
 import { sql } from '@vercel/postgres';
 import { type Store, type StoreProfile, type StoreStatusKey, type TaskStatusKey } from '@/lib/schema';
+import { generateDefaultTasks } from '@/lib/defaultTasks';
 
 export async function getWorkspaceData(): Promise<Store[]> {
   try {
@@ -167,4 +168,71 @@ export async function updateStoreProfile(storeId: string, profile: StoreProfile)
 
 export async function updateTaskDetail(taskId: string, memo: string, dueDate: string): Promise<void> {
   await sql`UPDATE tasks SET memo = ${memo}, due_date = ${dueDate} WHERE id = ${taskId};`;
+}
+
+export async function createStore(id: string, profile: StoreProfile): Promise<void> {
+  const b = (v: boolean) => (v ? 'true' : 'false');
+  const tasks = generateDefaultTasks(id);
+
+  // 1. stores テーブル
+  await sql`INSERT INTO stores (id, status) VALUES (${id}, 'notStarted');`;
+
+  // 2. store_profiles テーブル（updateStoreProfile と同カラム、INSERT 版）
+  await sql`
+    INSERT INTO store_profiles (
+      store_id, customer_code, name, company_name, business_type,
+      address, phone, manager_name, payment_method, collection_person,
+      delivery_time_start, delivery_time_end, has_lunch, order_method, holidays,
+      misc_collection, misc_collection_start, first_delivery_date, open_date,
+      smoking_policy, delivery_notes, special_notes, invoice_type,
+      server_install_date, handover_date, account_change_empty_return,
+      elevator_available, dedicated_entrance, notes_and_attachments,
+      seat_count, avg_spend_per_customer, expected_sales,
+      web_order, sponsorship, new_store, misc_bottle, key_custody,
+      congratulatory_flowers, proxy_delivery,
+      customer_work_start_weekday, customer_work_end_weekday,
+      customer_work_start_weekend, customer_work_end_weekend, pane2_memo
+    ) VALUES (
+      ${id},
+      ${profile.customerCode}, ${profile.name}, ${profile.companyName}, ${profile.businessType},
+      ${profile.address}, ${profile.phone}, ${profile.managerName}, ${profile.paymentMethod}, ${profile.collectionPerson},
+      ${profile.deliveryTimeStart}, ${profile.deliveryTimeEnd}, ${b(profile.hasLunch)}, ${profile.orderMethod}, ${profile.holidays},
+      ${b(profile.miscCollection)}, ${profile.miscCollectionStart}, ${profile.firstDeliveryDate}, ${profile.openDate},
+      ${profile.smokingPolicy}, ${profile.deliveryNotes}, ${profile.specialNotes}, ${profile.invoiceType},
+      ${profile.serverInstallDate}, ${profile.handoverDate}, ${b(profile.accountChangeEmptyReturn)},
+      ${b(profile.elevatorAvailable)}, ${b(profile.dedicatedEntrance)}, ${profile.notesAndAttachments},
+      ${profile.seatCount}, ${profile.avgSpendPerCustomer}, ${profile.expectedSales},
+      ${b(profile.webOrder)}, ${b(profile.sponsorship)}, ${b(profile.newStore)}, ${b(profile.miscBottle)}, ${b(profile.keyCustody)},
+      ${b(profile.congratulatoryFlowers)}, ${b(profile.proxyDelivery)},
+      ${profile.customerWorkStartWeekday}, ${profile.customerWorkEndWeekday},
+      ${profile.customerWorkStartWeekend}, ${profile.customerWorkEndWeekend}, ${profile.pane2Memo}
+    );
+  `;
+
+  // 3. tasks + subtasks テーブル
+  for (const task of tasks) {
+    await sql`
+      INSERT INTO tasks (
+        id, store_id, name, kind, status, due_date,
+        requires_web_order, requires_proxy_delivery, requires_congratulatory_flowers,
+        requires_key_custody, requires_sponsorship, requires_new_store, requires_misc_bottle
+      ) VALUES (
+        ${task.id}, ${id}, ${task.name}, ${task.kind}, ${task.status}, ${task.dueDate},
+        ${b(task.requiresWebOrder ?? false)}, ${b(task.requiresProxyDelivery ?? false)},
+        ${b(task.requiresCongratulatoryFlowers ?? false)}, ${b(task.requiresKeyCustody ?? false)},
+        ${b(task.requiresSponsorship ?? false)}, ${b(task.requiresNewStore ?? false)},
+        ${b(task.requiresMiscBottle ?? false)}
+      );
+    `;
+
+    for (const sub of task.subtasks ?? []) {
+      await sql`
+        INSERT INTO subtasks (id, task_id, name, completed, requires_misc_bottle, pin_bottom)
+        VALUES (
+          ${sub.id}, ${task.id}, ${sub.name}, ${b(sub.completed)},
+          ${b(sub.requiresMiscBottle ?? false)}, ${b(sub.pinBottom ?? false)}
+        );
+      `;
+    }
+  }
 }

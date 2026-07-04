@@ -50,6 +50,7 @@ type WorkspaceProps = {
   onToggleSubtask?: (subtaskId: string, completed: boolean) => Promise<void>;
   onSaveProfile?: (storeId: string, profile: StoreProfile) => Promise<void>;
   onSaveTaskDetail?: (taskId: string, memo: string, dueDate: string) => Promise<void>;
+  onAddStore?: (id: string, profile: StoreProfile) => Promise<void>;
 };
 
 export function Workspace({
@@ -60,6 +61,7 @@ export function Workspace({
   onToggleSubtask,
   onSaveProfile,
   onSaveTaskDetail,
+  onAddStore,
 }: WorkspaceProps) {
   const [stores, setStores] = useState<Store[]>(initialStores);
   const [selectedStoreId, setSelectedStoreId] = useState<string>("s1");
@@ -225,8 +227,9 @@ export function Workspace({
       const newStore: Store = { id, status: "notStarted", profile, tasks };
       setStores((prev) => [...prev, newStore]);
       selectStore(id);
+      void onAddStore?.(id, profile);
     },
-    [selectStore],
+    [selectStore, onAddStore],
   );
 
   // プロフィール変更を state と DB に反映
