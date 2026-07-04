@@ -91,13 +91,15 @@ export function SortableStoreRow({
           >
             <GripVertical aria-hidden className="size-3.5" />
           </span>
-          <span
-            className={cn(
-              "size-3 shrink-0 rounded-full",
-              TRAFFIC_DOT_CLASS[store.storeTrafficLight],
-            )}
-            aria-hidden
-          />
+          {status !== "completed" && (
+            <span
+              className={cn(
+                "size-3 shrink-0 rounded-full",
+                TRAFFIC_DOT_CLASS[store.storeTrafficLight],
+              )}
+              aria-hidden
+            />
+          )}
           <span className="min-w-0 flex-1 truncate text-sm font-medium">
             {store.name}
           </span>
