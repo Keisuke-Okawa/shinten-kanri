@@ -35,6 +35,11 @@ import {
   saveUrgencySettings,
   type UrgencySettings,
 } from "@/lib/urgencySettings";
+import {
+  BG_COLOR_PRESETS,
+  loadBgColorId,
+  saveBgColorId,
+} from "@/lib/backgroundColorSettings";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { GlobalHeader } from "@/components/workspace/GlobalHeader";
 import { StoreListPane } from "@/components/workspace/StoreListPane";
@@ -72,6 +77,7 @@ export function Workspace({
   const [urgencySettings, setUrgencySettings] = useState<UrgencySettings>(
     loadUrgencySettings,
   );
+  const [bgColorId, setBgColorId] = useState<string>(loadBgColorId);
 
   // 日付変化で信号機を再計算するため、今日の日付を state で管理する
   const [today, setToday] = useState(() => new Date());
@@ -96,6 +102,11 @@ export function Workspace({
   const handleSaveUrgencySettings = useCallback((s: UrgencySettings) => {
     saveUrgencySettings(s);
     setUrgencySettings(s);
+  }, []);
+
+  const handleSaveBgColor = useCallback((id: string) => {
+    saveBgColorId(id);
+    setBgColorId(id);
   }, []);
 
   const activeStore =
@@ -337,10 +348,15 @@ export function Workspace({
     );
   }
 
+  const bgBackground =
+    BG_COLOR_PRESETS.find((p) => p.id === bgColorId)?.background ??
+    BG_COLOR_PRESETS[0].background;
+
   return (
     <SidebarProvider
       defaultOpen
       className="h-screen w-full overflow-hidden bg-background text-foreground"
+      style={{ "--background": bgBackground } as React.CSSProperties}
     >
       <StoreListPane
         workspaceName={workspace.name}
@@ -355,6 +371,8 @@ export function Workspace({
             storeName={activeStore.profile.name}
             urgencySettings={urgencySettings}
             onSaveUrgencySettings={handleSaveUrgencySettings}
+            bgColorId={bgColorId}
+            onSaveBgColor={handleSaveBgColor}
           />
         <div className="flex min-h-0 flex-1">
           <StoreProfilePane
