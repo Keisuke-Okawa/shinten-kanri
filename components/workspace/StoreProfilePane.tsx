@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import { Trash2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -35,6 +36,19 @@ import {
   InlineNumberField,
 } from "@/components/primitives";
 
+// ── Enter キーで次フィールドへ移動（AddStoreDialog と同じルール） ──
+function focusNextInput(container: HTMLElement, current: HTMLElement) {
+  const focusable = Array.from(
+    container.querySelectorAll<HTMLElement>(
+      "input:not([disabled]), textarea:not([disabled])",
+    ),
+  );
+  const idx = focusable.indexOf(current);
+  if (idx >= 0 && idx < focusable.length - 1) {
+    focusable[idx + 1].focus();
+  }
+}
+
 type StoreProfilePaneProps = {
   profile: StoreProfile;
   setProfile: React.Dispatch<React.SetStateAction<StoreProfile>>;
@@ -69,6 +83,8 @@ export function StoreProfilePane({
   setProfile,
   onDeleteStore,
 }: StoreProfilePaneProps) {
+  const composingRef = useRef(false);
+
   const update = <K extends keyof StoreProfile>(key: K, value: StoreProfile[K]) =>
     setProfile((prev) => ({ ...prev, [key]: value }));
 
@@ -91,7 +107,21 @@ export function StoreProfilePane({
     <AlertDialog>
     <section className="flex w-[400px] shrink-0 flex-col border-r border-border bg-background">
       <ScrollArea className="min-h-0 flex-1">
-        <div className="flex flex-col gap-4 p-4">
+        <div
+          className="flex flex-col gap-4 p-4"
+          onCompositionStart={() => { composingRef.current = true; }}
+          onKeyDown={(e) => {
+            if (e.key !== "Enter") return;
+            if (e.nativeEvent.isComposing || composingRef.current) {
+              composingRef.current = false;
+              return;
+            }
+            const target = e.target as HTMLElement;
+            if (target.tagName !== "INPUT") return;
+            e.preventDefault();
+            focusNextInput(e.currentTarget, target);
+          }}
+        >
           {/* 基本情報 */}
           <Card>
             <CardHeader className="pb-2">
