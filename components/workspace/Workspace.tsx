@@ -360,7 +360,7 @@ export function Workspace({
           <StoreProfilePane
             key={activeStore.id}
             profile={activeStore.profile}
-            setProfile={setProfile}
+            onUpdateProfile={updateProfilePartial}
             onDeleteStore={() => deleteStore(activeStore.id)}
           />
           <TaskListPane

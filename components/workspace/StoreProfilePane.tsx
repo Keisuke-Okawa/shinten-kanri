@@ -51,7 +51,7 @@ function focusNextInput(container: HTMLElement, current: HTMLElement) {
 
 type StoreProfilePaneProps = {
   profile: StoreProfile;
-  setProfile: React.Dispatch<React.SetStateAction<StoreProfile>>;
+  onUpdateProfile: (updates: Partial<StoreProfile>) => void;
   onDeleteStore: () => void;
 };
 
@@ -80,13 +80,13 @@ function ConditionToggle({
 
 export function StoreProfilePane({
   profile,
-  setProfile,
+  onUpdateProfile,
   onDeleteStore,
 }: StoreProfilePaneProps) {
   const composingRef = useRef(false);
 
   const update = <K extends keyof StoreProfile>(key: K, value: StoreProfile[K]) =>
-    setProfile((prev) => ({ ...prev, [key]: value }));
+    onUpdateProfile({ [key]: value });
 
   /** 時間フィールド変更時に keyCustody を自動同期 */
   const updateTimeWithKeySync = (
@@ -97,10 +97,8 @@ export function StoreProfilePane({
       | "customerWorkStartWeekend",
     v: string,
   ) => {
-    setProfile((prev) => {
-      const updated = { ...prev, [key]: v };
-      return { ...updated, keyCustody: needsKeyCustody(updated) };
-    });
+    const updated = { ...profile, [key]: v };
+    onUpdateProfile({ [key]: v, keyCustody: needsKeyCustody(updated) });
   };
 
   return (
