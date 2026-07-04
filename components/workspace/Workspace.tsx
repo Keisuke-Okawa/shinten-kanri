@@ -19,6 +19,7 @@ import {
   type TaskStatusKey,
   STORE_STATUS_ORDER,
 } from "@/lib/schema";
+import { generateDefaultTasks } from "@/lib/defaultTasks";
 import { STORE_STATUS_LABELS } from "@/lib/labels";
 import {
   deriveTrafficLight,
@@ -217,6 +218,17 @@ export function Workspace({
     [selectedStoreId],
   );
 
+  const addStore = useCallback(
+    (profile: StoreProfile) => {
+      const id = `s-${Date.now()}`;
+      const tasks = generateDefaultTasks(id);
+      const newStore: Store = { id, status: "notStarted", profile, tasks };
+      setStores((prev) => [...prev, newStore]);
+      selectStore(id);
+    },
+    [selectStore],
+  );
+
   // プロフィール変更を state と DB に反映
   const updateProfilePartial = useCallback(
     (updates: Partial<StoreProfile>) => {
@@ -319,6 +331,7 @@ export function Workspace({
         selectedStoreId={selectedStoreId}
         onSelectStore={selectStore}
         onMoveStore={moveStore}
+        onAddStore={addStore}
       />
       <SidebarInset className="flex min-w-0 flex-col bg-background">
         <GlobalHeader

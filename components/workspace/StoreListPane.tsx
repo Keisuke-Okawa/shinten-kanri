@@ -23,8 +23,9 @@ import {
 } from "@dnd-kit/sortable";
 
 import { cn } from "@/lib/utils";
-import { type StoreGroup, type StoreRow, type StoreStatusKey } from "@/lib/schema";
+import { type StoreGroup, type StoreProfile, type StoreRow, type StoreStatusKey } from "@/lib/schema";
 import { STORE_STATUS_LABELS } from "@/lib/labels";
+import { AddStoreDialog } from "@/components/workspace/AddStoreDialog";
 import {
   Sidebar,
   SidebarContent,
@@ -53,6 +54,7 @@ type StoreListPaneProps = {
   selectedStoreId: string;
   onSelectStore: (id: string) => void;
   onMoveStore: (id: string, toStatus: StoreStatusKey) => void;
+  onAddStore: (profile: StoreProfile) => void;
 };
 
 export function StoreListPane({
@@ -61,6 +63,7 @@ export function StoreListPane({
   selectedStoreId,
   onSelectStore,
   onMoveStore,
+  onAddStore,
 }: StoreListPaneProps) {
   // 各グループの折りたたみ状態（デフォルト: 全て開く）
   const [groupOpen, setGroupOpen] = useState<Record<StoreStatusKey, boolean>>({
@@ -70,6 +73,7 @@ export function StoreListPane({
   });
 
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -192,11 +196,22 @@ export function StoreListPane({
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border p-2 group-data-[collapsible=icon]:hidden">
-        <Button variant="outline" size="sm" className="w-full">
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full"
+          onClick={() => setAddDialogOpen(true)}
+        >
           <Plus aria-hidden />
           店舗を追加
         </Button>
       </SidebarFooter>
+
+      <AddStoreDialog
+        open={addDialogOpen}
+        onOpenChange={setAddDialogOpen}
+        onAddStore={onAddStore}
+      />
     </Sidebar>
   );
 }
