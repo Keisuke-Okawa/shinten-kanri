@@ -1,26 +1,24 @@
-import { Workspace } from "@/components/workspace/Workspace";
-import storesData from "@/data/stores.json";
-import workspaceData from "@/data/workspace.json";
-import { storesSchema, workspaceSchema } from "@/lib/schema";
+import { Workspace } from '@/components/workspace/Workspace';
+import workspaceData from '@/data/workspace.json';
+import {
+  getWorkspaceData,
+  updateStoreStatus,
+  updateTaskStatus,
+  toggleSubtaskCompleted,
+} from './actions';
 
-export default function ShintenPage() {
-  const storesResult = storesSchema.safeParse(storesData);
-  const wsResult = workspaceSchema.safeParse(workspaceData);
+export const revalidate = 0;
 
-  if (!storesResult.success || !wsResult.success) {
-    const errors = [
-      !storesResult.success &&
-        `stores.json: ${storesResult.error.issues[0]?.message}`,
-      !wsResult.success &&
-        `workspace.json: ${wsResult.error.issues[0]?.message}`,
-    ].filter(Boolean);
-    throw new Error(`データの形式が正しくありません:\n${errors.join("\n")}`);
-  }
+export default async function ShintenPage() {
+  const initialStores = await getWorkspaceData();
 
   return (
     <Workspace
-      initialStores={storesResult.data}
-      workspace={wsResult.data}
+      initialStores={initialStores}
+      workspace={workspaceData}
+      onSaveStoreStatus={updateStoreStatus}
+      onSaveTaskStatus={updateTaskStatus}
+      onToggleSubtask={toggleSubtaskCompleted}
     />
   );
 }

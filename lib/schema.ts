@@ -118,6 +118,7 @@ export const taskSchema = z.object({
   requiresKeyCustody: z.boolean().optional(),
   requiresSponsorship: z.boolean().optional(),
   requiresNewStore: z.boolean().optional(),
+  requiresMiscBottle: z.boolean().optional(),
 });
 export type Task = z.infer<typeof taskSchema>;
 

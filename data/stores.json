@@ -20,14 +20,14 @@
       "holidays": "日曜",
       "miscCollection": false,
       "miscCollectionStart": "",
-      "firstDeliveryDate": "2026-06-10",
-      "openDate": "2026-06-15",
+      "firstDeliveryDate": "2026-06-25",
+      "openDate": "2026-06-30",
       "smokingPolicy": "分煙",
       "deliveryNotes": "搬入口は裏側。エレベーター利用可。",
       "specialNotes": "初回納品時に空容器回収あり",
       "invoiceType": "納品書",
-      "serverInstallDate": "2026-06-08",
-      "handoverDate": "2026-06-14",
+      "serverInstallDate": "2026-06-22",
+      "handoverDate": "2026-06-21",
       "accountChangeEmptyReturn": true,
       "elevatorAvailable": true,
       "dedicatedEntrance": false,
@@ -172,6 +172,14 @@
           { "id": "t1-14-1", "name": "経営者コード作成", "completed": false },
           { "id": "t1-14-2", "name": "新規コード作成", "completed": false }
         ]
+      },
+      {
+        "id": "t1-15",
+        "name": "雑瓶対応",
+        "kind": "standard",
+        "status": "notStarted",
+        "dueDate": "",
+        "requiresMiscBottle": true
       }
     ]
   },
@@ -255,6 +263,14 @@
         "kind": "standard",
         "status": "notStarted",
         "dueDate": "2026-07-05"
+      },
+      {
+        "id": "t2-5",
+        "name": "雑瓶対応",
+        "kind": "standard",
+        "status": "notStarted",
+        "dueDate": "",
+        "requiresMiscBottle": true
       }
     ]
   },
@@ -330,6 +346,14 @@
         "kind": "standard",
         "status": "completed",
         "dueDate": "2026-04-01"
+      },
+      {
+        "id": "t3-4",
+        "name": "雑瓶対応",
+        "kind": "standard",
+        "status": "notStarted",
+        "dueDate": "",
+        "requiresMiscBottle": true
       }
     ]
   }

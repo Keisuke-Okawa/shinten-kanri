@@ -38,6 +38,7 @@ export function isTaskApplicable(task: Task, profile: StoreProfile): boolean {
   if (task.requiresKeyCustody && !profile.keyCustody) return false;
   if (task.requiresSponsorship && !profile.sponsorship) return false;
   if (task.requiresNewStore && !profile.newStore) return false;
+  if (task.requiresMiscBottle && !profile.miscBottle) return false;
   return true;
 }
 

@@ -16,6 +16,7 @@ import {
   type StoreProfile,
   type StoreStatusKey,
   type Task,
+  type TaskStatusKey,
   STORE_STATUS_ORDER,
 } from "@/lib/schema";
 import { STORE_STATUS_LABELS } from "@/lib/labels";
@@ -43,9 +44,18 @@ import { TaskDetailPane } from "@/components/workspace/TaskDetailPane";
 type WorkspaceProps = {
   initialStores: Store[];
   workspace: { name: string; icon: string };
+  onSaveStoreStatus?: (storeId: string, status: StoreStatusKey) => Promise<void>;
+  onSaveTaskStatus?: (taskId: string, status: TaskStatusKey) => Promise<void>;
+  onToggleSubtask?: (subtaskId: string, completed: boolean) => Promise<void>;
 };
 
-export function Workspace({ initialStores, workspace }: WorkspaceProps) {
+export function Workspace({
+  initialStores,
+  workspace,
+  onSaveStoreStatus,
+  onSaveTaskStatus,
+  onToggleSubtask,
+}: WorkspaceProps) {
   const [stores, setStores] = useState<Store[]>(initialStores);
   const [selectedStoreId, setSelectedStoreId] = useState<string>("s1");
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>("t1-1");
@@ -112,6 +122,47 @@ export function Workspace({ initialStores, workspace }: WorkspaceProps) {
   const updateTask = useCallback(
     (updates: Partial<Task>) => {
       if (!selectedTaskId) return;
+
+      // タスクステータス変更を DB に反映
+      if (updates.status !== undefined) {
+        void onSaveTaskStatus?.(selectedTaskId, updates.status);
+      }
+
+      // サブタスクの completed 変更を検知して DB に反映
+      if (updates.subtasks !== undefined && onToggleSubtask) {
+        setStores((prev) => {
+          const currentTask = prev
+            .find((s) => s.id === selectedStoreId)
+            ?.tasks.find((t) => t.id === selectedTaskId);
+          if (currentTask?.subtasks) {
+            for (const updatedSub of updates.subtasks!) {
+              const original = currentTask.subtasks!.find((sub) => sub.id === updatedSub.id);
+              if (original && original.completed !== updatedSub.completed) {
+                void onToggleSubtask(updatedSub.id, updatedSub.completed);
+              }
+            }
+          }
+          return prev.map((s) => {
+            if (s.id !== selectedStoreId) return s;
+            return {
+              ...s,
+              tasks: s.tasks.map((t) => {
+                if (t.id !== selectedTaskId) return t;
+                const hiddenSubtasks = t.subtasks?.filter(
+                  (sub) => sub.requiresMiscBottle && !s.profile.miscBottle,
+                ) ?? [];
+                return {
+                  ...t,
+                  ...updates,
+                  subtasks: [...updates.subtasks!, ...hiddenSubtasks],
+                };
+              }),
+            };
+          });
+        });
+        return;
+      }
+
       setStores((prev) =>
         prev.map((s) => {
           if (s.id !== selectedStoreId) return s;
@@ -135,7 +186,7 @@ export function Workspace({ initialStores, workspace }: WorkspaceProps) {
         }),
       );
     },
-    [selectedStoreId, selectedTaskId],
+    [selectedStoreId, selectedTaskId, onSaveTaskStatus, onToggleSubtask],
   );
 
   const addTask = useCallback(
@@ -165,15 +216,19 @@ export function Workspace({ initialStores, workspace }: WorkspaceProps) {
   );
 
   // 手動ドラッグによるグループ移動。完了の強制ルールが成立している店舗は移動不可。
-  const moveStore = useCallback((id: string, toStatus: StoreStatusKey) => {
-    setStores((prev) =>
-      prev.map((s) => {
-        if (s.id !== id) return s;
-        if (shouldAutoComplete(s)) return s;
-        return { ...s, status: toStatus };
-      }),
-    );
-  }, []);
+  const moveStore = useCallback(
+    (id: string, toStatus: StoreStatusKey) => {
+      setStores((prev) =>
+        prev.map((s) => {
+          if (s.id !== id) return s;
+          if (shouldAutoComplete(s)) return s;
+          return { ...s, status: toStatus };
+        }),
+      );
+      void onSaveStoreStatus?.(id, toStatus);
+    },
+    [onSaveStoreStatus],
+  );
 
   const storeGroups = useMemo(() => {
     return STORE_STATUS_ORDER.map((status) => ({
