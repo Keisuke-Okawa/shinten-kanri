@@ -8,7 +8,6 @@ export type BgColorPreset = {
   /**
    * Pane 1 の背景 → --sidebar を上書き。
    * background より ΔL ≈ −0.018、彩度 ×1.3 で「少し濃い」関係を維持する。
-   * （既存オフホワイトの sidebar/background 差を模範）
    */
   sidebar: string;
   /**
@@ -16,6 +15,26 @@ export type BgColorPreset = {
    * background より ΔL ≈ −0.012、彩度 ×1.2 で sidebar より少し薄い濃さ。
    */
   canvas: string;
+  /**
+   * 区切り線・スクロールバー・子タスク丸 → --border / --input を上書き。
+   * sidebar より ΔL ≈ −0.05、彩度 ×1.35。同じ色相で視覚的に浮かない。
+   */
+  border: string;
+  /**
+   * 進捗バー空欄・バッジ背景（small） → --muted を上書き。
+   * canvas より ΔL ≈ −0.04、彩度 ×1.2。
+   */
+  muted: string;
+  /**
+   * Pane1 件数バッジ背景 → --secondary を上書き。
+   * sidebar より ΔL ≈ −0.045、彩度 ×1.25。
+   */
+  secondary: string;
+  /**
+   * Pane1 内セクション区切り → --sidebar-border を上書き。
+   * sidebar より ΔL ≈ −0.07、彩度 ×1.5。
+   */
+  sidebarBorder: string;
 };
 
 export const BG_COLOR_PRESETS: BgColorPreset[] = [
@@ -24,8 +43,12 @@ export const BG_COLOR_PRESETS: BgColorPreset[] = [
     label: "デフォルト",
     swatch: "oklch(0.60 0.02 270)",
     background: "oklch(0.9701 0.0041 91.4464)",
-    sidebar: "oklch(0.9526 0.0058 84.5665)", // 既存の --sidebar 値をそのまま使用
+    sidebar: "oklch(0.9526 0.0058 84.5665)",
     canvas: "oklch(0.958 0.005 88)",
+    border: "oklch(0.890 0.010 88.6)",
+    muted: "oklch(0.920 0.007 78.3)",
+    secondary: "oklch(0.905 0.009 84.6)",
+    sidebarBorder: "oklch(0.860 0.008 84.6)",
   },
   {
     id: "blue",
@@ -34,6 +57,10 @@ export const BG_COLOR_PRESETS: BgColorPreset[] = [
     background: "oklch(0.965 0.018 220)",
     sidebar: "oklch(0.947 0.023 220)",
     canvas: "oklch(0.953 0.022 220)",
+    border: "oklch(0.895 0.031 220)",
+    muted: "oklch(0.913 0.026 220)",
+    secondary: "oklch(0.902 0.029 220)",
+    sidebarBorder: "oklch(0.880 0.034 220)",
   },
   {
     id: "salmon",
@@ -42,6 +69,10 @@ export const BG_COLOR_PRESETS: BgColorPreset[] = [
     background: "oklch(0.965 0.018 25)",
     sidebar: "oklch(0.947 0.023 25)",
     canvas: "oklch(0.953 0.022 25)",
+    border: "oklch(0.895 0.031 25)",
+    muted: "oklch(0.913 0.026 25)",
+    secondary: "oklch(0.902 0.029 25)",
+    sidebarBorder: "oklch(0.880 0.034 25)",
   },
   {
     id: "green",
@@ -50,6 +81,10 @@ export const BG_COLOR_PRESETS: BgColorPreset[] = [
     background: "oklch(0.965 0.015 145)",
     sidebar: "oklch(0.947 0.020 145)",
     canvas: "oklch(0.953 0.018 145)",
+    border: "oklch(0.895 0.027 145)",
+    muted: "oklch(0.913 0.022 145)",
+    secondary: "oklch(0.902 0.025 145)",
+    sidebarBorder: "oklch(0.880 0.030 145)",
   },
   {
     id: "lime",
@@ -58,6 +93,10 @@ export const BG_COLOR_PRESETS: BgColorPreset[] = [
     background: "oklch(0.968 0.020 115)",
     sidebar: "oklch(0.950 0.026 115)",
     canvas: "oklch(0.956 0.024 115)",
+    border: "oklch(0.898 0.035 115)",
+    muted: "oklch(0.916 0.029 115)",
+    secondary: "oklch(0.905 0.033 115)",
+    sidebarBorder: "oklch(0.883 0.039 115)",
   },
   {
     id: "purple",
@@ -66,6 +105,10 @@ export const BG_COLOR_PRESETS: BgColorPreset[] = [
     background: "oklch(0.965 0.014 290)",
     sidebar: "oklch(0.947 0.018 290)",
     canvas: "oklch(0.953 0.017 290)",
+    border: "oklch(0.895 0.024 290)",
+    muted: "oklch(0.913 0.020 290)",
+    secondary: "oklch(0.902 0.023 290)",
+    sidebarBorder: "oklch(0.880 0.028 290)",
   },
 ];
 

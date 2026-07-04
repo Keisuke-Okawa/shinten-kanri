@@ -360,6 +360,11 @@ export function Workspace({
           "--background": bgPreset.background,
           "--sidebar": bgPreset.sidebar,
           "--canvas": bgPreset.canvas,
+          "--border": bgPreset.border,
+          "--input": bgPreset.border,
+          "--muted": bgPreset.muted,
+          "--secondary": bgPreset.secondary,
+          "--sidebar-border": bgPreset.sidebarBorder,
         } as React.CSSProperties
       }
     >
