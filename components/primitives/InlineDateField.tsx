@@ -26,6 +26,30 @@ import {
 } from "@/components/ui/popover";
 import { formatDisplayDate, formatISODate, parseISODate } from "@/lib/computed/profile";
 
+/** "M/D" 形式の文字列を Date に変換する。年は「今日以前なら翌年、未来なら今年」と推定。 */
+function parseMDDate(s: string): Date | undefined {
+  const m = s.match(/^(\d{1,2})\/(\d{1,2})$/);
+  if (!m) return undefined;
+  const month = parseInt(m[1], 10) - 1;
+  const day = parseInt(m[2], 10);
+  if (month < 0 || month > 11 || day < 1 || day > 31) return undefined;
+  const today = new Date();
+  let year = today.getFullYear();
+  const candidate = new Date(year, month, day);
+  if (candidate.getTime() < today.getTime()) year += 1;
+  return new Date(year, month, day);
+}
+
+/** 表示用文字列（ISO または M/D など）を ISO 8601 に変換する。変換できない場合は元の文字列を返す。 */
+export function normalizeToISO(s: string): string {
+  if (!s) return s;
+  const iso = parseISODate(s);
+  if (iso) return formatISODate(iso);
+  const md = parseMDDate(s);
+  if (md) return formatISODate(md);
+  return s;
+}
+
 export type InlineDateFieldProps = {
   /** ISO 8601 (YYYY-MM-DD) 形式の文字列。空で「日付を選択」placeholder */
   value: string;
@@ -45,6 +69,7 @@ function FreeTextDateField({
   onSave,
   ariaLabel,
 }: Omit<InlineDateFieldProps, "freeText">) {
+  // 保存値は ISO 優先。表示は M/D 形式に変換したもの（変換できなければそのまま）
   const displayValue = formatDisplayDate(value) || value;
   const [inputVal, setInputVal] = useState(displayValue);
   const [open, setOpen] = useState(false);
@@ -63,7 +88,9 @@ function FreeTextDateField({
           value={inputVal}
           onChange={(e) => setInputVal(e.target.value)}
           onBlur={() => {
-            if (inputVal !== value) onSave(inputVal);
+            // 保存値（ISO）の表示形式と比較して変化がなければ保存しない
+            const displayOfSaved = formatDisplayDate(value) || value;
+            if (inputVal !== displayOfSaved) onSave(normalizeToISO(inputVal));
           }}
           onCompositionStart={() => { composingRef.current = true; }}
           onKeyDown={(e) => {
@@ -90,9 +117,10 @@ function FreeTextDateField({
           mode="single"
           selected={parseISODate(value)}
           onSelect={(d) => {
-            const formatted = formatDisplayDate(formatISODate(d));
-            setInputVal(formatted);
-            if (formatted !== value) onSave(formatted);
+            const iso = formatISODate(d);         // "2026-06-01"（ISO 形式で保存）
+            const display = formatDisplayDate(iso); // "6/1"（表示用）
+            setInputVal(display);
+            if (iso !== value) onSave(iso);
             setOpen(false);
           }}
           captionLayout="dropdown"

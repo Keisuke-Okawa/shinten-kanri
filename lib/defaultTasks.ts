@@ -118,6 +118,8 @@ const TASK_TEMPLATES: TaskTemplate[] = [
   },
 ];
 
+export const TASK_TEMPLATE_NAMES: string[] = TASK_TEMPLATES.map((t) => t.name);
+
 export function generateDefaultTasks(storeId: string): Task[] {
   return TASK_TEMPLATES.map((tmpl, i) => {
     const taskId = `${storeId}-t${i + 1}`;

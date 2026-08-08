@@ -40,6 +40,22 @@ import {
   loadBgColorId,
   saveBgColorId,
 } from "@/lib/backgroundColorSettings";
+import {
+  computeTaskDueDate,
+  loadTaskDueDateOffsets,
+  saveTaskDueDateOffsets,
+  type TaskDueDateOffsets,
+} from "@/lib/taskDueDateOffsets";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { GlobalHeader } from "@/components/workspace/GlobalHeader";
 import { StoreListPane } from "@/components/workspace/StoreListPane";
@@ -78,6 +94,14 @@ export function Workspace({
     loadUrgencySettings,
   );
   const [bgColorId, setBgColorId] = useState<string>(loadBgColorId);
+  const [taskDueDateOffsets, setTaskDueDateOffsets] = useState<TaskDueDateOffsets>(
+    loadTaskDueDateOffsets,
+  );
+  // オープン日 or 初回納品日変更時の確認ダイアログ用
+  const [pendingDateChange, setPendingDateChange] = useState<{
+    field: "openDate" | "firstDeliveryDate";
+    newDate: string;
+  } | null>(null);
 
   // 日付変化で信号機を再計算するため、今日の日付を state で管理する
   const [today, setToday] = useState(() => new Date());
@@ -107,6 +131,11 @@ export function Workspace({
   const handleSaveBgColor = useCallback((id: string) => {
     saveBgColorId(id);
     setBgColorId(id);
+  }, []);
+
+  const handleSaveTaskDueDateOffsets = useCallback((s: TaskDueDateOffsets) => {
+    saveTaskDueDateOffsets(s);
+    setTaskDueDateOffsets(s);
   }, []);
 
   const activeStore =
@@ -236,13 +265,21 @@ export function Workspace({
   const addStore = useCallback(
     (profile: StoreProfile) => {
       const id = `s-${Date.now()}`;
-      const tasks = generateDefaultTasks(id);
+      const rawTasks = generateDefaultTasks(id);
+      // 新規店舗追加時、オープン日 or 初回納品日が入力済みならオフセット設定を適用
+      const tasks = rawTasks.map((t) => {
+        const cfg = taskDueDateOffsets[t.name];
+        if (!cfg) return t;
+        const ref = cfg.reference === "openDate" ? profile.openDate : profile.firstDeliveryDate;
+        if (!ref) return t;
+        return { ...t, dueDate: computeTaskDueDate(ref, cfg.days) };
+      });
       const newStore: Store = { id, status: "notStarted", profile, tasks };
       setStores((prev) => [...prev, newStore]);
       selectStore(id);
       void onAddStore?.(id, profile);
     },
-    [selectStore, onAddStore],
+    [selectStore, onAddStore, taskDueDateOffsets],
   );
 
   const deleteStore = useCallback(
@@ -257,16 +294,118 @@ export function Workspace({
     [stores, selectedStoreId, selectStore, onDeleteStore],
   );
 
+  // 対象店舗のタスク期日を openDate / firstDeliveryDate から一括計算して上書きする
+  const applyDueDates = useCallback(
+    (storeId: string, openDate: string, firstDeliveryDate: string) => {
+      setStores((prev) =>
+        prev.map((s) => {
+          if (s.id !== storeId) return s;
+          return {
+            ...s,
+            tasks: s.tasks.map((t) => {
+              const cfg = taskDueDateOffsets[t.name];
+              if (!cfg) return t;
+              const ref = cfg.reference === "openDate" ? openDate : firstDeliveryDate;
+              if (!ref) return t;
+              return { ...t, dueDate: computeTaskDueDate(ref, cfg.days) };
+            }),
+          };
+        }),
+      );
+    },
+    [taskDueDateOffsets],
+  );
+
   // プロフィール変更を state と DB に反映
   const updateProfilePartial = useCallback(
     (updates: Partial<StoreProfile>) => {
-      const currentProfile = stores.find((s) => s.id === selectedStoreId)?.profile;
-      if (!currentProfile) return;
+      const currentStore = stores.find((s) => s.id === selectedStoreId);
+      if (!currentStore) return;
+      const currentProfile = currentStore.profile;
       const newProfile = { ...currentProfile, ...updates };
       setProfile(newProfile);
       void onSaveProfile?.(selectedStoreId, newProfile);
+
+      // トグルが ON になったとき、対応タスクの dueDate が空なら自動設定する
+      // プロフィールフラグ → 対応する Task の requiresXxx フラグのマッピング
+      type ToggleKey = keyof Pick<
+        StoreProfile,
+        "webOrder" | "proxyDelivery" | "congratulatoryFlowers" | "keyCustody" | "sponsorship" | "newStore" | "miscBottle"
+      >;
+      const toggleToTaskFlag: Record<ToggleKey, keyof Task> = {
+        webOrder: "requiresWebOrder",
+        proxyDelivery: "requiresProxyDelivery",
+        congratulatoryFlowers: "requiresCongratulatoryFlowers",
+        keyCustody: "requiresKeyCustody",
+        sponsorship: "requiresSponsorship",
+        newStore: "requiresNewStore",
+        miscBottle: "requiresMiscBottle",
+      };
+      const toggleKeys = Object.keys(toggleToTaskFlag) as ToggleKey[];
+      const newlyActivated = toggleKeys.filter(
+        (key) => updates[key] === true && !currentProfile[key],
+      );
+      if (newlyActivated.length === 0) return;
+
+      setStores((prev) =>
+        prev.map((s) => {
+          if (s.id !== selectedStoreId) return s;
+          return {
+            ...s,
+            tasks: s.tasks.map((t) => {
+              if (t.dueDate) return t; // 期日が既にあれば変更しない
+              const isTargeted = newlyActivated.some(
+                (key) => t[toggleToTaskFlag[key]],
+              );
+              if (!isTargeted) return t;
+              const cfg = taskDueDateOffsets[t.name];
+              if (!cfg) return t;
+              const ref =
+                cfg.reference === "openDate"
+                  ? newProfile.openDate
+                  : newProfile.firstDeliveryDate;
+              if (!ref) return t;
+              return { ...t, dueDate: computeTaskDueDate(ref, cfg.days) };
+            }),
+          };
+        }),
+      );
     },
-    [selectedStoreId, stores, setProfile, onSaveProfile],
+    [selectedStoreId, stores, setProfile, onSaveProfile, taskDueDateOffsets],
+  );
+
+  // オープン日変更ハンドラ：既存値があれば確認ダイアログ経由
+  const handleUpdateOpenDate = useCallback(
+    (newDate: string) => {
+      const currentStore = stores.find((s) => s.id === selectedStoreId);
+      if (!currentStore) return;
+      const currentOpenDate = currentStore.profile.openDate;
+      if (currentOpenDate && currentOpenDate !== newDate) {
+        setPendingDateChange({ field: "openDate", newDate });
+      } else {
+        updateProfilePartial({ openDate: newDate });
+        const firstDeliveryDate = currentStore.profile.firstDeliveryDate;
+        applyDueDates(selectedStoreId, newDate, firstDeliveryDate);
+      }
+    },
+    [stores, selectedStoreId, updateProfilePartial, applyDueDates],
+  );
+
+  // 初回納品日変更ハンドラ：既存値があれば確認ダイアログ経由
+  const handleUpdateFirstDeliveryDate = useCallback(
+    (newDate: string) => {
+      const currentStore = stores.find((s) => s.id === selectedStoreId);
+      if (!currentStore) return;
+      const currentFirstDeliveryDate = currentStore.profile.firstDeliveryDate;
+      if (currentFirstDeliveryDate && currentFirstDeliveryDate !== newDate) {
+        setPendingDateChange({ field: "firstDeliveryDate", newDate });
+      } else {
+        updateProfilePartial({ firstDeliveryDate: newDate });
+        const openDate = currentStore.profile.openDate;
+        applyDueDates(selectedStoreId, openDate, newDate);
+      }
+    },
+    [stores, selectedStoreId, updateProfilePartial, applyDueDates],
   );
 
   const togglePane4 = useCallback(
@@ -347,62 +486,114 @@ export function Workspace({
   const bgPreset =
     BG_COLOR_PRESETS.find((p) => p.id === bgColorId) ?? BG_COLOR_PRESETS[0];
 
+  const confirmLabel =
+    pendingDateChange?.field === "openDate" ? "オープン日" : "初回納品日";
+
   return (
-    <SidebarProvider
-      defaultOpen
-      className="h-screen w-full overflow-hidden bg-background text-foreground"
-      style={
-        {
-          "--background": bgPreset.background,
-          "--sidebar": bgPreset.sidebar,
-          "--canvas": bgPreset.canvas,
-          "--border": bgPreset.border,
-          "--input": bgPreset.border,
-          "--muted": bgPreset.muted,
-          "--secondary": bgPreset.secondary,
-          "--sidebar-border": bgPreset.sidebarBorder,
-        } as React.CSSProperties
-      }
-    >
-      <StoreListPane
-        workspaceName={workspace.name}
-        groups={storeGroups}
-        selectedStoreId={selectedStoreId}
-        onSelectStore={selectStore}
-        onMoveStore={moveStore}
-        onAddStore={addStore}
-      />
-      <SidebarInset className="flex min-w-0 flex-col bg-background">
-        <GlobalHeader
+    <>
+      <AlertDialog open={pendingDateChange !== null}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>タスクの期日を更新しますか？</AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmLabel}
+              が変更されました。各タスクの期日を自動で再計算します。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={() => {
+                if (!pendingDateChange) return;
+                updateProfilePartial({ [pendingDateChange.field]: pendingDateChange.newDate });
+                setPendingDateChange(null);
+              }}
+            >
+              いいえ
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (!pendingDateChange) return;
+                const currentStore = stores.find((s) => s.id === selectedStoreId);
+                if (!currentStore) return;
+                updateProfilePartial({ [pendingDateChange.field]: pendingDateChange.newDate });
+                const openDate =
+                  pendingDateChange.field === "openDate"
+                    ? pendingDateChange.newDate
+                    : currentStore.profile.openDate;
+                const firstDeliveryDate =
+                  pendingDateChange.field === "firstDeliveryDate"
+                    ? pendingDateChange.newDate
+                    : currentStore.profile.firstDeliveryDate;
+                applyDueDates(selectedStoreId, openDate, firstDeliveryDate);
+                setPendingDateChange(null);
+              }}
+            >
+              はい
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <SidebarProvider
+        defaultOpen
+        className="h-screen w-full overflow-hidden bg-background text-foreground"
+        style={
+          {
+            "--background": bgPreset.background,
+            "--sidebar": bgPreset.sidebar,
+            "--canvas": bgPreset.canvas,
+            "--border": bgPreset.border,
+            "--input": bgPreset.border,
+            "--muted": bgPreset.muted,
+            "--secondary": bgPreset.secondary,
+            "--sidebar-border": bgPreset.sidebarBorder,
+          } as React.CSSProperties
+        }
+      >
+        <StoreListPane
+          workspaceName={workspace.name}
+          groups={storeGroups}
+          selectedStoreId={selectedStoreId}
+          onSelectStore={selectStore}
+          onMoveStore={moveStore}
+          onAddStore={addStore}
+        />
+        <SidebarInset className="flex min-w-0 flex-col bg-background">
+          <GlobalHeader
             storeName={activeStore.profile.name}
             urgencySettings={urgencySettings}
             onSaveUrgencySettings={handleSaveUrgencySettings}
             bgColorId={bgColorId}
             onSaveBgColor={handleSaveBgColor}
+            taskDueDateOffsets={taskDueDateOffsets}
+            onSaveTaskDueDateOffsets={handleSaveTaskDueDateOffsets}
           />
-        <div className="flex min-h-0 flex-1">
-          <StoreProfilePane
-            key={activeStore.id}
-            profile={activeStore.profile}
-            onUpdateProfile={updateProfilePartial}
-            onDeleteStore={() => deleteStore(activeStore.id)}
-          />
-          <TaskListPane
-            tasks={taskRows}
-            selectedTaskId={selectedTaskId}
-            onSelectTask={selectTask}
-            onAddTask={addTask}
-          />
-          <TaskDetailPane
-            task={selectedTask}
-            profile={activeStore.profile}
-            pane4Open={pane4Open}
-            onTogglePane4={togglePane4}
-            onUpdateTask={updateTask}
-            onUpdateProfile={updateProfilePartial}
-          />
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+          <div className="flex min-h-0 flex-1">
+            <StoreProfilePane
+              key={activeStore.id}
+              profile={activeStore.profile}
+              onUpdateProfile={updateProfilePartial}
+              onUpdateOpenDate={handleUpdateOpenDate}
+              onUpdateFirstDeliveryDate={handleUpdateFirstDeliveryDate}
+              onDeleteStore={() => deleteStore(activeStore.id)}
+            />
+            <TaskListPane
+              tasks={taskRows}
+              selectedTaskId={selectedTaskId}
+              onSelectTask={selectTask}
+              onAddTask={addTask}
+            />
+            <TaskDetailPane
+              task={selectedTask}
+              profile={activeStore.profile}
+              pane4Open={pane4Open}
+              onTogglePane4={togglePane4}
+              onUpdateTask={updateTask}
+              onUpdateProfile={updateProfilePartial}
+            />
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
+    </>
   );
 }

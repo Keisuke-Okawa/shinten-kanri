@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Settings } from "lucide-react";
+import { ChevronLeft, ChevronRight, Settings } from "lucide-react";
 
 import {
   DEFAULT_URGENCY_SETTINGS,
@@ -11,6 +11,12 @@ import {
   BG_COLOR_PRESETS,
   type BgColorPreset,
 } from "@/lib/backgroundColorSettings";
+import {
+  DEFAULT_TASK_DUE_DATE_OFFSETS,
+  type DueDateReference,
+  type TaskDueDateOffsets,
+} from "@/lib/taskDueDateOffsets";
+import { TASK_TEMPLATE_NAMES } from "@/lib/defaultTasks";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -36,27 +42,215 @@ import {
 } from "@/components/ui/tooltip";
 import { SectionLabel } from "@/components/primitives/SectionLabel";
 
-type GlobalHeaderProps = {
-  storeName: string;
-  urgencySettings: UrgencySettings;
-  onSaveUrgencySettings: (s: UrgencySettings) => void;
-  bgColorId: string;
-  onSaveBgColor: (id: string) => void;
+// ── 設定サブビュー: タスク期日オフセット編集 ──────────────────────────
+
+type TaskOffsetEntry = {
+  name: string;
+  reference: DueDateReference;
+  days: string; // input は string で管理し保存時に number 変換
+  isNull: boolean;
 };
+
+function sortEntries(entries: TaskOffsetEntry[]): TaskOffsetEntry[] {
+  return [...entries].sort((a, b) => {
+    // グループ: openDate 先
+    if (a.reference !== b.reference) {
+      return a.reference === "openDate" ? -1 : 1;
+    }
+    // null は末尾
+    if (a.isNull !== b.isNull) return a.isNull ? 1 : -1;
+    // days 降順（大きい = 早い = 上）
+    const da = parseFloat(a.days) || 0;
+    const db = parseFloat(b.days) || 0;
+    return db - da;
+  });
+}
+
+function buildInitialEntries(offsets: TaskDueDateOffsets): TaskOffsetEntry[] {
+  return sortEntries(
+    TASK_TEMPLATE_NAMES.map((name) => {
+      const cfg = offsets[name];
+      if (!cfg) {
+        return {
+          name,
+          reference: "openDate",
+          days: "",
+          isNull: true,
+        };
+      }
+      return {
+        name,
+        reference: cfg.reference,
+        days: String(cfg.days),
+        isNull: false,
+      };
+    }),
+  );
+}
+
+function TaskDueDatesForm({
+  initialOffsets,
+  onSave,
+  onBack,
+}: {
+  initialOffsets: TaskDueDateOffsets;
+  onSave: (s: TaskDueDateOffsets) => void;
+  onBack: () => void;
+}) {
+  const [entries, setEntries] = useState<TaskOffsetEntry[]>(() =>
+    buildInitialEntries(initialOffsets),
+  );
+
+  function updateEntry(name: string, patch: Partial<TaskOffsetEntry>) {
+    setEntries((prev) =>
+      prev.map((e) => (e.name === name ? { ...e, ...patch } : e)),
+    );
+  }
+
+  function handleBlurSort() {
+    setEntries((prev) => sortEntries(prev));
+  }
+
+  function handleSave() {
+    const result: TaskDueDateOffsets = {};
+    for (const e of entries) {
+      if (e.isNull || e.days === "") {
+        result[e.name] = null;
+        continue;
+      }
+      const days = parseInt(e.days, 10);
+      if (isNaN(days)) {
+        result[e.name] = null;
+        continue;
+      }
+      result[e.name] = { reference: e.reference, days };
+    }
+    onSave(result);
+    onBack();
+  }
+
+  // グループラベル挿入のための配列加工
+  const grouped: Array<{ type: "label"; label: string } | { type: "row"; entry: TaskOffsetEntry }> = [];
+  let lastRef: DueDateReference | null = null;
+  for (const entry of entries) {
+    const ref = entry.isNull ? null : entry.reference;
+    if (ref !== lastRef && ref !== null) {
+      grouped.push({
+        type: "label",
+        label: ref === "openDate" ? "オープン日基準" : "初回納品日基準",
+      });
+      lastRef = ref;
+    } else if (ref === null && lastRef !== null) {
+      grouped.push({ type: "label", label: "自動設定なし" });
+      lastRef = null;
+    }
+    grouped.push({ type: "row", entry });
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      {/* 戻るボタン */}
+      <button
+        type="button"
+        onClick={onBack}
+        className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+      >
+        <ChevronLeft className="size-4" />
+        設定に戻る
+      </button>
+
+      <div className="flex flex-col gap-1">
+        {grouped.map((item, i) => {
+          if (item.type === "label") {
+            return (
+              <p key={`label-${i}`} className="mt-2 text-xs font-medium text-muted-foreground">
+                {item.label}
+              </p>
+            );
+          }
+          const e = item.entry;
+          return (
+            <div key={e.name} className="flex items-center gap-2 rounded-md py-1 text-sm">
+              <span className="w-36 shrink-0 text-foreground">{e.name}</span>
+              {/* 基準日セレクト */}
+              <select
+                value={e.reference}
+                onChange={(ev) =>
+                  updateEntry(e.name, {
+                    reference: ev.target.value as DueDateReference,
+                  })
+                }
+                onBlur={handleBlurSort}
+                className="rounded-md border border-input bg-card px-1 py-0.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50"
+              >
+                <option value="openDate">オープン日</option>
+                <option value="firstDeliveryDate">初回納品日</option>
+              </select>
+              {/* 日数インプット */}
+              <input
+                type="number"
+                value={e.days}
+                placeholder="—"
+                onChange={(ev) =>
+                  updateEntry(e.name, {
+                    days: ev.target.value,
+                    isNull: ev.target.value === "",
+                  })
+                }
+                onBlur={handleBlurSort}
+                className="w-14 rounded-md border border-input bg-card px-2 py-0.5 text-right text-foreground tabular-nums focus:outline-none focus:ring-2 focus:ring-ring/50"
+                aria-label={`${e.name} の日数`}
+              />
+              <span className="shrink-0 text-xs text-muted-foreground">日前</span>
+            </div>
+          );
+        })}
+      </div>
+
+      <p className="text-xs text-muted-foreground">
+        負の値（例: -7）は基準日の 7 日後を意味します。空欄は自動設定しません。
+      </p>
+
+      <DialogFooter>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            setEntries(buildInitialEntries(DEFAULT_TASK_DUE_DATE_OFFSETS));
+          }}
+        >
+          デフォルトに戻す
+        </Button>
+        <Button size="sm" onClick={handleSave}>
+          保存
+        </Button>
+      </DialogFooter>
+    </div>
+  );
+}
+
+// ── 設定フォーム（メインビュー） ──────────────────────────────────────
+
+type SettingsView = "main" | "taskDueDates";
 
 function SettingsForm({
   initialUrgency,
   bgColorId,
+  taskDueDateOffsets,
   onSave,
   onClose,
   onBgColorChange,
+  onSaveTaskDueDateOffsets,
 }: {
   initialUrgency: UrgencySettings;
   bgColorId: string;
+  taskDueDateOffsets: TaskDueDateOffsets;
   onSave: (s: UrgencySettings) => void;
   onClose: () => void;
   onBgColorChange: (id: string) => void;
+  onSaveTaskDueDateOffsets: (s: TaskDueDateOffsets) => void;
 }) {
+  const [view, setView] = useState<SettingsView>("main");
   const [redDays, setRedDays] = useState(String(initialUrgency.redDays));
   const [yellowDays, setYellowDays] = useState(String(initialUrgency.yellowDays));
 
@@ -76,6 +270,16 @@ function SettingsForm({
   function handleReset() {
     setRedDays(String(DEFAULT_URGENCY_SETTINGS.redDays));
     setYellowDays(String(DEFAULT_URGENCY_SETTINGS.yellowDays));
+  }
+
+  if (view === "taskDueDates") {
+    return (
+      <TaskDueDatesForm
+        initialOffsets={taskDueDateOffsets}
+        onSave={onSaveTaskDueDateOffsets}
+        onBack={() => setView("main")}
+      />
+    );
   }
 
   return (
@@ -123,6 +327,21 @@ function SettingsForm({
 
       <Separator />
 
+      {/* タスク期日の変更 */}
+      <div className="flex flex-col gap-3">
+        <SectionLabel>タスク期日の変更</SectionLabel>
+        <button
+          type="button"
+          onClick={() => setView("taskDueDates")}
+          className="flex items-center justify-between rounded-md border border-input bg-card px-3 py-2 text-sm text-foreground hover:bg-muted/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+        >
+          <span>各タスクのデフォルト期日を設定</span>
+          <ChevronRight className="size-4 text-muted-foreground" />
+        </button>
+      </div>
+
+      <Separator />
+
       {/* 背景カラー */}
       <div className="flex flex-col gap-3">
         <SectionLabel>背景カラー</SectionLabel>
@@ -161,12 +380,26 @@ function SettingsForm({
   );
 }
 
+// ── GlobalHeader ────────────────────────────────────────────────────
+
+type GlobalHeaderProps = {
+  storeName: string;
+  urgencySettings: UrgencySettings;
+  onSaveUrgencySettings: (s: UrgencySettings) => void;
+  bgColorId: string;
+  onSaveBgColor: (id: string) => void;
+  taskDueDateOffsets: TaskDueDateOffsets;
+  onSaveTaskDueDateOffsets: (s: TaskDueDateOffsets) => void;
+};
+
 export function GlobalHeader({
   storeName,
   urgencySettings,
   onSaveUrgencySettings,
   bgColorId,
   onSaveBgColor,
+  taskDueDateOffsets,
+  onSaveTaskDueDateOffsets,
 }: GlobalHeaderProps) {
   const [open, setOpen] = useState(false);
 
@@ -216,9 +449,11 @@ export function GlobalHeader({
           <SettingsForm
             initialUrgency={urgencySettings}
             bgColorId={bgColorId}
+            taskDueDateOffsets={taskDueDateOffsets}
             onSave={onSaveUrgencySettings}
             onClose={() => setOpen(false)}
             onBgColorChange={onSaveBgColor}
+            onSaveTaskDueDateOffsets={onSaveTaskDueDateOffsets}
           />
         </DialogContent>
       </Dialog>

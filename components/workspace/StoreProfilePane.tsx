@@ -52,6 +52,8 @@ function focusNextInput(container: HTMLElement, current: HTMLElement) {
 type StoreProfilePaneProps = {
   profile: StoreProfile;
   onUpdateProfile: (updates: Partial<StoreProfile>) => void;
+  onUpdateOpenDate: (v: string) => void;
+  onUpdateFirstDeliveryDate: (v: string) => void;
   onDeleteStore: () => void;
 };
 
@@ -81,6 +83,8 @@ function ConditionToggle({
 export function StoreProfilePane({
   profile,
   onUpdateProfile,
+  onUpdateOpenDate,
+  onUpdateFirstDeliveryDate,
   onDeleteStore,
 }: StoreProfilePaneProps) {
   const composingRef = useRef(false);
@@ -193,7 +197,7 @@ export function StoreProfilePane({
                 <InlineFieldRow label="オープン" direction="horizontal">
                   <InlineDateField
                     value={profile.openDate}
-                    onSave={(v) => update("openDate", v)}
+                    onSave={onUpdateOpenDate}
                     ariaLabel="オープン日"
                     freeText
                   />
@@ -201,7 +205,7 @@ export function StoreProfilePane({
                 <InlineFieldRow label="初回納品" direction="horizontal">
                   <InlineDateField
                     value={profile.firstDeliveryDate}
-                    onSave={(v) => update("firstDeliveryDate", v)}
+                    onSave={onUpdateFirstDeliveryDate}
                     ariaLabel="初回納品日"
                     freeText
                   />
