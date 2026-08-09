@@ -22,11 +22,21 @@ export function subscribeUrgency(listener: () => void): () => void {
   };
 }
 
+// useSyncExternalStore の getSnapshot はオブジェクトの同一参照を返す必要がある。
+// データが変わっていない限り同じ参照を返すようにキャッシュする。
+let cachedUrgencyRaw: string | null = null;
+let cachedUrgencyValue: UrgencySettings = DEFAULT_URGENCY_SETTINGS;
+
 export function loadUrgencySettings(): UrgencySettings {
   if (typeof window === "undefined") return DEFAULT_URGENCY_SETTINGS;
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return DEFAULT_URGENCY_SETTINGS;
+    if (raw === cachedUrgencyRaw) return cachedUrgencyValue;
+    cachedUrgencyRaw = raw;
+    if (!raw) {
+      cachedUrgencyValue = DEFAULT_URGENCY_SETTINGS;
+      return cachedUrgencyValue;
+    }
     const parsed = JSON.parse(raw) as Partial<UrgencySettings>;
     const redDays =
       typeof parsed.redDays === "number" && parsed.redDays >= 1
@@ -36,7 +46,8 @@ export function loadUrgencySettings(): UrgencySettings {
       typeof parsed.yellowDays === "number" && parsed.yellowDays > redDays
         ? parsed.yellowDays
         : DEFAULT_URGENCY_SETTINGS.yellowDays;
-    return { redDays, yellowDays };
+    cachedUrgencyValue = { redDays, yellowDays };
+    return cachedUrgencyValue;
   } catch {
     return DEFAULT_URGENCY_SETTINGS;
   }
@@ -45,6 +56,6 @@ export function loadUrgencySettings(): UrgencySettings {
 export function saveUrgencySettings(s: UrgencySettings): void {
   if (typeof window === "undefined") return;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
-  // 同一タブのリスナーに変更を通知
+  cachedUrgencyRaw = null; // キャッシュ無効化（次回読み込み時に再パース）
   urgencyListeners.forEach((l) => l());
 }

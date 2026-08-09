@@ -50,14 +50,24 @@ export function subscribeDueDateOffsets(listener: () => void): () => void {
   };
 }
 
+// useSyncExternalStore の getSnapshot はオブジェクトの同一参照を返す必要がある。
+// データが変わっていない限り同じ参照を返すようにキャッシュする。
+let cachedDueDateRaw: string | null = null;
+let cachedDueDateValue: TaskDueDateOffsets = DEFAULT_TASK_DUE_DATE_OFFSETS;
+
 export function loadTaskDueDateOffsets(): TaskDueDateOffsets {
   if (typeof window === "undefined") return DEFAULT_TASK_DUE_DATE_OFFSETS;
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return DEFAULT_TASK_DUE_DATE_OFFSETS;
+    if (raw === cachedDueDateRaw) return cachedDueDateValue;
+    cachedDueDateRaw = raw;
+    if (!raw) {
+      cachedDueDateValue = DEFAULT_TASK_DUE_DATE_OFFSETS;
+      return cachedDueDateValue;
+    }
     const parsed = JSON.parse(raw) as TaskDueDateOffsets;
-    // デフォルトにないキーはそのまま、足りないキーはデフォルトで補完
-    return { ...DEFAULT_TASK_DUE_DATE_OFFSETS, ...parsed };
+    cachedDueDateValue = { ...DEFAULT_TASK_DUE_DATE_OFFSETS, ...parsed };
+    return cachedDueDateValue;
   } catch {
     return DEFAULT_TASK_DUE_DATE_OFFSETS;
   }
@@ -66,7 +76,7 @@ export function loadTaskDueDateOffsets(): TaskDueDateOffsets {
 export function saveTaskDueDateOffsets(s: TaskDueDateOffsets): void {
   if (typeof window === "undefined") return;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
-  // 同一タブのリスナーに変更を通知
+  cachedDueDateRaw = null; // キャッシュ無効化（次回読み込み時に再パース）
   dueDateListeners.forEach((l) => l());
 }
 
