@@ -9,7 +9,7 @@
  * Pane 4: タスク詳細 / 号車報告書フォーム
  */
 
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo, useEffect, useSyncExternalStore } from "react";
 
 import {
   type Store,
@@ -33,17 +33,23 @@ import {
 import {
   loadUrgencySettings,
   saveUrgencySettings,
+  subscribeUrgency,
   type UrgencySettings,
+  DEFAULT_URGENCY_SETTINGS,
 } from "@/lib/urgencySettings";
 import {
   BG_COLOR_PRESETS,
+  getDefaultBgColorId,
   loadBgColorId,
   saveBgColorId,
+  subscribeBgColor,
 } from "@/lib/backgroundColorSettings";
 import {
   computeTaskDueDate,
+  DEFAULT_TASK_DUE_DATE_OFFSETS,
   loadTaskDueDateOffsets,
   saveTaskDueDateOffsets,
+  subscribeDueDateOffsets,
   type TaskDueDateOffsets,
 } from "@/lib/taskDueDateOffsets";
 import {
@@ -90,12 +96,24 @@ export function Workspace({
   const [selectedStoreId, setSelectedStoreId] = useState<string>("s1");
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>("t1-1");
   const [pane4ManuallyClosed, setPane4ManuallyClosed] = useState(false);
-  const [urgencySettings, setUrgencySettings] = useState<UrgencySettings>(
+  // useSyncExternalStore で localStorage を購読:
+  //   - getServerSnapshot: SSR 時（localStorage なし）はデフォルト値
+  //   - getSnapshot: クライアント側で localStorage から読む
+  //   - subscribe: 同一タブ（save 関数）・別タブ（storage イベント）の変更を検知
+  const urgencySettings = useSyncExternalStore(
+    subscribeUrgency,
     loadUrgencySettings,
+    () => DEFAULT_URGENCY_SETTINGS,
   );
-  const [bgColorId, setBgColorId] = useState<string>(loadBgColorId);
-  const [taskDueDateOffsets, setTaskDueDateOffsets] = useState<TaskDueDateOffsets>(
+  const bgColorId = useSyncExternalStore(
+    subscribeBgColor,
+    loadBgColorId,
+    getDefaultBgColorId,
+  );
+  const taskDueDateOffsets = useSyncExternalStore(
+    subscribeDueDateOffsets,
     loadTaskDueDateOffsets,
+    () => DEFAULT_TASK_DUE_DATE_OFFSETS,
   );
   // オープン日 or 初回納品日変更時の確認ダイアログ用
   const [pendingDateChange, setPendingDateChange] = useState<{
@@ -124,18 +142,15 @@ export function Workspace({
   }, []);
 
   const handleSaveUrgencySettings = useCallback((s: UrgencySettings) => {
-    saveUrgencySettings(s);
-    setUrgencySettings(s);
+    saveUrgencySettings(s); // 保存 + リスナー通知 → useSyncExternalStore が自動再レンダリング
   }, []);
 
   const handleSaveBgColor = useCallback((id: string) => {
     saveBgColorId(id);
-    setBgColorId(id);
   }, []);
 
   const handleSaveTaskDueDateOffsets = useCallback((s: TaskDueDateOffsets) => {
     saveTaskDueDateOffsets(s);
-    setTaskDueDateOffsets(s);
   }, []);
 
   const activeStore =

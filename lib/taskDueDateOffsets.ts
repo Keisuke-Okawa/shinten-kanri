@@ -38,6 +38,18 @@ export const DEFAULT_TASK_DUE_DATE_OFFSETS: TaskDueDateOffsets = {
 
 const STORAGE_KEY = "taskDueDateOffsets";
 
+// useSyncExternalStore 用のリスナー管理（同一タブでの変更を通知する）
+let dueDateListeners: Array<() => void> = [];
+
+export function subscribeDueDateOffsets(listener: () => void): () => void {
+  dueDateListeners = [...dueDateListeners, listener];
+  window.addEventListener("storage", listener);
+  return () => {
+    dueDateListeners = dueDateListeners.filter((l) => l !== listener);
+    window.removeEventListener("storage", listener);
+  };
+}
+
 export function loadTaskDueDateOffsets(): TaskDueDateOffsets {
   if (typeof window === "undefined") return DEFAULT_TASK_DUE_DATE_OFFSETS;
   try {
@@ -54,6 +66,8 @@ export function loadTaskDueDateOffsets(): TaskDueDateOffsets {
 export function saveTaskDueDateOffsets(s: TaskDueDateOffsets): void {
   if (typeof window === "undefined") return;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+  // 同一タブのリスナーに変更を通知
+  dueDateListeners.forEach((l) => l());
 }
 
 /**

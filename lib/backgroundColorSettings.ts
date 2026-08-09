@@ -115,6 +115,18 @@ export const BG_COLOR_PRESETS: BgColorPreset[] = [
 const STORAGE_KEY = "workspace-bg-color";
 const DEFAULT_BG_ID = "default";
 
+// useSyncExternalStore 用のリスナー管理（同一タブでの変更を通知する）
+let bgColorListeners: Array<() => void> = [];
+
+export function subscribeBgColor(listener: () => void): () => void {
+  bgColorListeners = [...bgColorListeners, listener];
+  window.addEventListener("storage", listener);
+  return () => {
+    bgColorListeners = bgColorListeners.filter((l) => l !== listener);
+    window.removeEventListener("storage", listener);
+  };
+}
+
 export function loadBgColorId(): string {
   try {
     const v = localStorage.getItem(STORAGE_KEY);
@@ -125,10 +137,16 @@ export function loadBgColorId(): string {
   return DEFAULT_BG_ID;
 }
 
+export function getDefaultBgColorId(): string {
+  return DEFAULT_BG_ID;
+}
+
 export function saveBgColorId(id: string): void {
   try {
     localStorage.setItem(STORAGE_KEY, id);
   } catch {
     // 失敗しても UI には影響させない
   }
+  // 同一タブのリスナーに変更を通知
+  bgColorListeners.forEach((l) => l());
 }
