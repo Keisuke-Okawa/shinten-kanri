@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { Trash2 } from "lucide-react";
+import { Link2, Trash2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { needsKeyCustody } from "@/lib/computed/tasks";
@@ -17,6 +17,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Toggle } from "@/components/ui/toggle";
@@ -35,6 +40,7 @@ import {
   InlineTimeField,
   InlineNumberField,
 } from "@/components/primitives";
+import { TabelogImportField } from "@/components/workspace/TabelogImportField";
 
 // ── Enter キーで次フィールドへ移動（AddStoreDialog と同じルール） ──
 function focusNextInput(container: HTMLElement, current: HTMLElement) {
@@ -128,7 +134,31 @@ export function StoreProfilePane({
           <Card>
             <CardHeader className="pb-2">
               <CardTitle>{PANE2_SECTION.basic}</CardTitle>
-              <CardAction>
+              <CardAction className="flex items-center gap-1">
+                <Popover>
+                  <PopoverTrigger
+                    aria-label="食べログから読み込む"
+                    className="flex size-7 items-center justify-center rounded-md text-muted-foreground/40 outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <Link2 className="size-4" />
+                  </PopoverTrigger>
+                  <PopoverContent side="bottom" align="end" className="w-80">
+                    <TabelogImportField
+                      onImport={(data) =>
+                        onUpdateProfile({
+                          ...(data.name !== undefined && { name: data.name }),
+                          ...(data.address !== undefined && { address: data.address }),
+                          ...(data.phone !== undefined && { phone: data.phone }),
+                          ...(data.seatCount !== undefined && { seatCount: data.seatCount }),
+                          ...(data.holidays !== undefined && { holidays: data.holidays }),
+                          ...(data.avgSpendPerCustomer !== undefined && {
+                            avgSpendPerCustomer: data.avgSpendPerCustomer,
+                          }),
+                        })
+                      }
+                    />
+                  </PopoverContent>
+                </Popover>
                 <AlertDialogTrigger
                   aria-label="店舗を削除"
                   className="flex size-7 items-center justify-center rounded-md text-muted-foreground/40 outline-none transition-colors hover:bg-destructive/10 hover:text-destructive focus-visible:ring-2 focus-visible:ring-ring"

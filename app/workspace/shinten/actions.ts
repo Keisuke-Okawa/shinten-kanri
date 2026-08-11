@@ -3,6 +3,7 @@
 import { sql } from '@vercel/postgres';
 import { type Store, type StoreProfile, type StoreStatusKey, type TaskStatusKey } from '@/lib/schema';
 import { generateDefaultTasks } from '@/lib/defaultTasks';
+import { fetchTabelogStore, type TabelogStoreData } from '@/lib/tabelog/fetchTabelogStore';
 
 export async function getWorkspaceData(): Promise<Store[]> {
   try {
@@ -243,4 +244,10 @@ export async function createStore(id: string, profile: StoreProfile): Promise<vo
       `;
     }
   }
+}
+
+export async function fetchTabelogStoreAction(
+  url: string,
+): Promise<{ ok: true; data: TabelogStoreData } | { ok: false; error: string }> {
+  return fetchTabelogStore(url);
 }

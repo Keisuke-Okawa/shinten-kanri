@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 
 import { type StoreProfile } from "@/lib/schema";
 import { PANE2_SECTION } from "@/lib/labels";
+import { TabelogImportField } from "@/components/workspace/TabelogImportField";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -209,6 +210,21 @@ export function AddStoreDialog({
               </CardHeader>
               <CardContent>
                 <FieldGroup>
+                  <TabelogImportField
+                    onImport={(data) => {
+                      setProfile((prev) => ({
+                        ...prev,
+                        ...(data.name !== undefined && { name: data.name }),
+                        ...(data.address !== undefined && { address: data.address }),
+                        ...(data.phone !== undefined && { phone: data.phone }),
+                        ...(data.seatCount !== undefined && { seatCount: data.seatCount }),
+                        ...(data.holidays !== undefined && { holidays: data.holidays }),
+                        ...(data.avgSpendPerCustomer !== undefined && {
+                          avgSpendPerCustomer: data.avgSpendPerCustomer,
+                        }),
+                      }));
+                    }}
+                  />
                   <Field>
                     <FieldLabel htmlFor="add-name">店名 *</FieldLabel>
                     <Input
