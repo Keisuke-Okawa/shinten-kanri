@@ -144,18 +144,7 @@ export function StoreProfilePane({
                   </PopoverTrigger>
                   <PopoverContent side="bottom" align="end" className="w-80">
                     <TabelogImportField
-                      onImport={(data) =>
-                        onUpdateProfile({
-                          ...(data.name !== undefined && { name: data.name }),
-                          ...(data.address !== undefined && { address: data.address }),
-                          ...(data.phone !== undefined && { phone: data.phone }),
-                          ...(data.seatCount !== undefined && { seatCount: data.seatCount }),
-                          ...(data.holidays !== undefined && { holidays: data.holidays }),
-                          ...(data.avgSpendPerCustomer !== undefined && {
-                            avgSpendPerCustomer: data.avgSpendPerCustomer,
-                          }),
-                        })
-                      }
+                      onImport={(patch) => onUpdateProfile(patch)}
                     />
                   </PopoverContent>
                 </Popover>

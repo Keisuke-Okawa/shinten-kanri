@@ -211,19 +211,9 @@ export function AddStoreDialog({
               <CardContent>
                 <FieldGroup>
                   <TabelogImportField
-                    onImport={(data) => {
-                      setProfile((prev) => ({
-                        ...prev,
-                        ...(data.name !== undefined && { name: data.name }),
-                        ...(data.address !== undefined && { address: data.address }),
-                        ...(data.phone !== undefined && { phone: data.phone }),
-                        ...(data.seatCount !== undefined && { seatCount: data.seatCount }),
-                        ...(data.holidays !== undefined && { holidays: data.holidays }),
-                        ...(data.avgSpendPerCustomer !== undefined && {
-                          avgSpendPerCustomer: data.avgSpendPerCustomer,
-                        }),
-                      }));
-                    }}
+                    onImport={(patch) =>
+                      setProfile((prev) => ({ ...prev, ...patch }))
+                    }
                   />
                   <Field>
                     <FieldLabel htmlFor="add-name">店名 *</FieldLabel>

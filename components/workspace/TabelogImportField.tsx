@@ -6,12 +6,13 @@ import { Link2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { type TabelogStoreData } from "@/lib/tabelog/parseTabelogHtml";
 import { fetchTabelogStoreAction } from "@/app/workspace/shinten/actions";
+import { type StoreProfile } from "@/lib/schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 type Props = {
-  /** 読み込んだデータを呼び出し元に渡す */
-  onImport: (data: TabelogStoreData) => void;
+  /** 読み込んだデータを呼び出し元に渡す。phone は含まない。openingHours は pane2Memo に変換済み */
+  onImport: (patch: Partial<StoreProfile>) => void;
 };
 
 /**
@@ -34,7 +35,18 @@ export function TabelogImportField({ onImport }: Props) {
     try {
       const result = await fetchTabelogStoreAction(trimmed);
       if (result.ok) {
-        onImport(result.data);
+        const { openingHours, ...rest } = result.data;
+        const patch: Partial<StoreProfile> = {
+          ...(rest.name !== undefined && { name: rest.name }),
+          ...(rest.address !== undefined && { address: rest.address }),
+          ...(rest.seatCount !== undefined && { seatCount: rest.seatCount }),
+          ...(rest.holidays !== undefined && { holidays: rest.holidays }),
+          ...(rest.avgSpendPerCustomer !== undefined && {
+            avgSpendPerCustomer: rest.avgSpendPerCustomer,
+          }),
+          ...(openingHours !== undefined && { pane2Memo: `【営業時間】\n${openingHours}` }),
+        };
+        onImport(patch);
         setStatus({
           type: "success",
           message: "読み込みました。取れなかった項目は手入力してください。",
