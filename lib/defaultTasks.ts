@@ -48,8 +48,13 @@ const TASK_TEMPLATES: TaskTemplate[] = [
     requiresKeyCustody: true,
   },
   {
-    name: "初回納品確認",
+    name: "初回納品",
     kind: "standard",
+    subtasks: [
+      { name: "初回内容ヒアリング", completed: false },
+      { name: "初回伝発", completed: false },
+      { name: "センター共有", completed: false },
+    ],
   },
   {
     name: "代配手配",
