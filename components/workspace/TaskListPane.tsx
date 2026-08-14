@@ -165,6 +165,7 @@ export function TaskListPane({
                   "flex w-full items-center gap-3 rounded-lg border border-border bg-card px-4 py-3 text-left transition-colors",
                   active && "border-primary/40 bg-primary/5",
                   !active && "hover:bg-muted/50",
+                  !active && task.displayStatus === "completed" && "bg-muted/50",
                 )}
               >
                 {task.trafficLight ? (
