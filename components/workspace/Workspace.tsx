@@ -321,27 +321,39 @@ export function Workspace({
   // 対象店舗のタスク期日を openDate / firstDeliveryDate から一括計算して上書きする
   const applyDueDates = useCallback(
     (storeId: string, openDate: string, firstDeliveryDate: string) => {
-      const updated: { taskId: string; dueDate: string }[] = [];
+      // setStores のコールバック内で副作用（push）を行うと、React がコールバックを
+      // 呼び出すタイミング（レンダリング時）より前に onSaveDueDates チェックが走り、
+      // 配列が空のまま DB 保存が呼ばれない。そのため期日計算を先に同期実行する。
+      const currentStore = stores.find((s) => s.id === storeId);
+      if (!currentStore) return;
+
+      const dueDateMap: Record<string, string> = {};
+      for (const t of currentStore.tasks) {
+        const cfg = taskDueDateOffsets[t.name];
+        if (!cfg) continue;
+        const ref = cfg.reference === "openDate" ? openDate : firstDeliveryDate;
+        if (!ref) continue;
+        dueDateMap[t.id] = computeTaskDueDate(ref, cfg.days);
+      }
+
+      const updated = Object.entries(dueDateMap).map(([taskId, dueDate]) => ({ taskId, dueDate }));
+
       setStores((prev) =>
         prev.map((s) => {
           if (s.id !== storeId) return s;
           return {
             ...s,
             tasks: s.tasks.map((t) => {
-              const cfg = taskDueDateOffsets[t.name];
-              if (!cfg) return t;
-              const ref = cfg.reference === "openDate" ? openDate : firstDeliveryDate;
-              if (!ref) return t;
-              const dueDate = computeTaskDueDate(ref, cfg.days);
-              updated.push({ taskId: t.id, dueDate });
-              return { ...t, dueDate };
+              const dueDate = dueDateMap[t.id];
+              return dueDate ? { ...t, dueDate } : t;
             }),
           };
         }),
       );
+
       if (updated.length > 0) void onSaveDueDates?.(updated);
     },
-    [taskDueDateOffsets, onSaveDueDates],
+    [stores, taskDueDateOffsets, onSaveDueDates],
   );
 
   // プロフィール変更を state と DB に反映
@@ -375,28 +387,32 @@ export function Workspace({
       );
       if (newlyActivated.length === 0) return;
 
-      const toggleUpdated: { taskId: string; dueDate: string }[] = [];
+      // setStores コールバック内での副作用を避けるため、期日計算を先に同期実行する
+      const toggleDueDateMap: Record<string, string> = {};
+      for (const t of currentStore.tasks) {
+        if (t.dueDate) continue;
+        const isTargeted = newlyActivated.some((key) => t[toggleToTaskFlag[key]]);
+        if (!isTargeted) continue;
+        const cfg = taskDueDateOffsets[t.name];
+        if (!cfg) continue;
+        const ref =
+          cfg.reference === "openDate"
+            ? newProfile.openDate
+            : newProfile.firstDeliveryDate;
+        if (!ref) continue;
+        toggleDueDateMap[t.id] = computeTaskDueDate(ref, cfg.days);
+      }
+
+      const toggleUpdated = Object.entries(toggleDueDateMap).map(([taskId, dueDate]) => ({ taskId, dueDate }));
+
       setStores((prev) =>
         prev.map((s) => {
           if (s.id !== selectedStoreId) return s;
           return {
             ...s,
             tasks: s.tasks.map((t) => {
-              if (t.dueDate) return t; // 期日が既にあれば変更しない
-              const isTargeted = newlyActivated.some(
-                (key) => t[toggleToTaskFlag[key]],
-              );
-              if (!isTargeted) return t;
-              const cfg = taskDueDateOffsets[t.name];
-              if (!cfg) return t;
-              const ref =
-                cfg.reference === "openDate"
-                  ? newProfile.openDate
-                  : newProfile.firstDeliveryDate;
-              if (!ref) return t;
-              const dueDate = computeTaskDueDate(ref, cfg.days);
-              toggleUpdated.push({ taskId: t.id, dueDate });
-              return { ...t, dueDate };
+              const dueDate = toggleDueDateMap[t.id];
+              return dueDate ? { ...t, dueDate } : t;
             }),
           };
         }),
