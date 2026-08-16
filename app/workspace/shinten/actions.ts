@@ -171,6 +171,17 @@ export async function updateTaskDetail(taskId: string, memo: string, dueDate: st
   await sql`UPDATE tasks SET memo = ${memo}, due_date = ${dueDate} WHERE id = ${taskId};`;
 }
 
+export async function bulkUpdateTaskDueDates(
+  dueDates: { taskId: string; dueDate: string }[],
+): Promise<void> {
+  if (dueDates.length === 0) return;
+  await Promise.all(
+    dueDates.map(({ taskId, dueDate }) =>
+      sql`UPDATE tasks SET due_date = ${dueDate} WHERE id = ${taskId};`,
+    ),
+  );
+}
+
 export async function deleteStore(id: string): Promise<void> {
   // 子テーブルから順に削除（外部キー制約対策）
   await sql`DELETE FROM subtasks WHERE task_id IN (SELECT id FROM tasks WHERE store_id = ${id});`;

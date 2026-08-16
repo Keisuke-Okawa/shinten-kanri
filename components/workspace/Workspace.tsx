@@ -77,6 +77,7 @@ type WorkspaceProps = {
   onToggleSubtask?: (subtaskId: string, completed: boolean) => Promise<void>;
   onSaveProfile?: (storeId: string, profile: StoreProfile) => Promise<void>;
   onSaveTaskDetail?: (taskId: string, memo: string, dueDate: string) => Promise<void>;
+  onSaveDueDates?: (dueDates: { taskId: string; dueDate: string }[]) => Promise<void>;
   onAddStore?: (id: string, profile: StoreProfile) => Promise<void>;
   onDeleteStore?: (id: string) => Promise<void>;
 };
@@ -89,6 +90,7 @@ export function Workspace({
   onToggleSubtask,
   onSaveProfile,
   onSaveTaskDetail,
+  onSaveDueDates,
   onAddStore,
   onDeleteStore,
 }: WorkspaceProps) {
@@ -282,19 +284,26 @@ export function Workspace({
       const id = `s-${Date.now()}`;
       const rawTasks = generateDefaultTasks(id);
       // 新規店舗追加時、オープン日 or 初回納品日が入力済みならオフセット設定を適用
+      const addedDueDates: { taskId: string; dueDate: string }[] = [];
       const tasks = rawTasks.map((t) => {
         const cfg = taskDueDateOffsets[t.name];
         if (!cfg) return t;
         const ref = cfg.reference === "openDate" ? profile.openDate : profile.firstDeliveryDate;
         if (!ref) return t;
-        return { ...t, dueDate: computeTaskDueDate(ref, cfg.days) };
+        const dueDate = computeTaskDueDate(ref, cfg.days);
+        addedDueDates.push({ taskId: t.id, dueDate });
+        return { ...t, dueDate };
       });
       const newStore: Store = { id, status: "notStarted", profile, tasks };
       setStores((prev) => [...prev, newStore]);
       selectStore(id);
-      void onAddStore?.(id, profile);
+      // createStore でタスク行が INSERT された後でないと due_date の UPDATE が効かないため await する
+      void (async () => {
+        await onAddStore?.(id, profile);
+        if (addedDueDates.length > 0) void onSaveDueDates?.(addedDueDates);
+      })();
     },
-    [selectStore, onAddStore, taskDueDateOffsets],
+    [selectStore, onAddStore, onSaveDueDates, taskDueDateOffsets],
   );
 
   const deleteStore = useCallback(
@@ -312,6 +321,7 @@ export function Workspace({
   // 対象店舗のタスク期日を openDate / firstDeliveryDate から一括計算して上書きする
   const applyDueDates = useCallback(
     (storeId: string, openDate: string, firstDeliveryDate: string) => {
+      const updated: { taskId: string; dueDate: string }[] = [];
       setStores((prev) =>
         prev.map((s) => {
           if (s.id !== storeId) return s;
@@ -322,13 +332,16 @@ export function Workspace({
               if (!cfg) return t;
               const ref = cfg.reference === "openDate" ? openDate : firstDeliveryDate;
               if (!ref) return t;
-              return { ...t, dueDate: computeTaskDueDate(ref, cfg.days) };
+              const dueDate = computeTaskDueDate(ref, cfg.days);
+              updated.push({ taskId: t.id, dueDate });
+              return { ...t, dueDate };
             }),
           };
         }),
       );
+      if (updated.length > 0) void onSaveDueDates?.(updated);
     },
-    [taskDueDateOffsets],
+    [taskDueDateOffsets, onSaveDueDates],
   );
 
   // プロフィール変更を state と DB に反映
@@ -362,6 +375,7 @@ export function Workspace({
       );
       if (newlyActivated.length === 0) return;
 
+      const toggleUpdated: { taskId: string; dueDate: string }[] = [];
       setStores((prev) =>
         prev.map((s) => {
           if (s.id !== selectedStoreId) return s;
@@ -380,13 +394,16 @@ export function Workspace({
                   ? newProfile.openDate
                   : newProfile.firstDeliveryDate;
               if (!ref) return t;
-              return { ...t, dueDate: computeTaskDueDate(ref, cfg.days) };
+              const dueDate = computeTaskDueDate(ref, cfg.days);
+              toggleUpdated.push({ taskId: t.id, dueDate });
+              return { ...t, dueDate };
             }),
           };
         }),
       );
+      if (toggleUpdated.length > 0) void onSaveDueDates?.(toggleUpdated);
     },
-    [selectedStoreId, stores, setProfile, onSaveProfile, taskDueDateOffsets],
+    [selectedStoreId, stores, setProfile, onSaveProfile, taskDueDateOffsets, onSaveDueDates],
   );
 
   // オープン日変更ハンドラ：既存値があれば確認ダイアログ経由

@@ -7,6 +7,7 @@ import {
   toggleSubtaskCompleted,
   updateStoreProfile,
   updateTaskDetail,
+  bulkUpdateTaskDueDates,
   createStore,
   deleteStore,
 } from './actions';
@@ -25,6 +26,7 @@ export default async function ShintenPage() {
       onToggleSubtask={toggleSubtaskCompleted}
       onSaveProfile={updateStoreProfile}
       onSaveTaskDetail={updateTaskDetail}
+      onSaveDueDates={bulkUpdateTaskDueDates}
       onAddStore={createStore}
       onDeleteStore={deleteStore}
     />
