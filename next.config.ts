@@ -12,9 +12,6 @@ const nextConfig: NextConfig = {
     root: projectRoot,
   },
   outputFileTracingRoot: projectRoot,
-  experimental: {
-    serverActionsBodySizeLimit: "10mb",
-  },
 };
 
 export default nextConfig;
