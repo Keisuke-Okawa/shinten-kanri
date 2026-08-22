@@ -99,7 +99,8 @@ export function ImageImportField({ onImport }: Props) {
 
     try {
       const base64 = await toBase64(file);
-      const result = await analyzeStoreImageAction(base64, file.type);
+      // Canvas で JPEG に変換しているため mimeType は image/jpeg 固定
+      const result = await analyzeStoreImageAction(base64, "image/jpeg");
       if (result.ok) {
         onImport(result.data);
         setStatus({
@@ -211,21 +212,55 @@ export function ImageImportField({ onImport }: Props) {
   );
 }
 
-/** File → base64文字列（データURL部分を除いた生のbase64）*/
+/**
+ * File → base64文字列（圧縮あり）
+ * Canvas で最大 1920px に縮小し、JPEG 品質 0.85 でエンコードする。
+ * Server Action の 10MB 上限に余裕を持って収める。
+ */
 function toBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      // "data:image/png;base64,<base64>" → "<base64>"
-      const base64 = result.split(",")[1];
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+
+      const MAX = 1920;
+      let { width, height } = img;
+      if (width > MAX || height > MAX) {
+        if (width > height) {
+          height = Math.round((height * MAX) / width);
+          width = MAX;
+        } else {
+          width = Math.round((width * MAX) / height);
+          height = MAX;
+        }
+      }
+
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        reject(new Error("Canvas コンテキストを取得できませんでした"));
+        return;
+      }
+      ctx.drawImage(img, 0, 0, width, height);
+
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+      const base64 = dataUrl.split(",")[1];
       if (!base64) {
         reject(new Error("base64変換に失敗しました"));
         return;
       }
       resolve(base64);
     };
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(file);
+
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error("画像の読み込みに失敗しました"));
+    };
+
+    img.src = objectUrl;
   });
 }
