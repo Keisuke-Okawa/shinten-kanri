@@ -98,6 +98,7 @@ export function Workspace({
   const [selectedStoreId, setSelectedStoreId] = useState<string>("s1");
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>("t1-1");
   const [pane4ManuallyClosed, setPane4ManuallyClosed] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   // useSyncExternalStore で localStorage を購読:
   //   - getServerSnapshot: SSR 時（localStorage なし）はデフォルト値
   //   - getSnapshot: クライアント側で localStorage から読む
@@ -155,6 +156,12 @@ export function Workspace({
     saveTaskDueDateOffsets(s);
   }, []);
 
+  const handleSaveError = useCallback((e: unknown) => {
+    const msg = e instanceof Error ? e.message : String(e);
+    console.error("[save error]", msg, e);
+    setSaveError(msg);
+  }, []);
+
   const activeStore =
     stores.find((s) => s.id === selectedStoreId) ?? stores[0];
 
@@ -191,7 +198,7 @@ export function Workspace({
 
       // タスクステータス変更を DB に反映
       if (updates.status !== undefined) {
-        void onSaveTaskStatus?.(selectedTaskId, updates.status);
+        onSaveTaskStatus?.(selectedTaskId, updates.status).catch(handleSaveError);
       }
 
       // メモ・期日変更を DB に反映
@@ -201,7 +208,7 @@ export function Workspace({
           ?.tasks.find((t) => t.id === selectedTaskId);
         const newMemo = updates.memo ?? currentTask?.memo ?? "";
         const newDueDate = updates.dueDate ?? currentTask?.dueDate ?? "";
-        void onSaveTaskDetail?.(selectedTaskId, newMemo, newDueDate);
+        onSaveTaskDetail?.(selectedTaskId, newMemo, newDueDate).catch(handleSaveError);
       }
 
       // サブタスクの completed 変更を検知して DB に反映
@@ -214,7 +221,7 @@ export function Workspace({
             for (const updatedSub of updates.subtasks!) {
               const original = currentTask.subtasks!.find((sub) => sub.id === updatedSub.id);
               if (original && original.completed !== updatedSub.completed) {
-                void onToggleSubtask(updatedSub.id, updatedSub.completed);
+                onToggleSubtask(updatedSub.id, updatedSub.completed).catch(handleSaveError);
               }
             }
           }
@@ -297,13 +304,16 @@ export function Workspace({
       const newStore: Store = { id, status: "notStarted", profile, tasks };
       setStores((prev) => [...prev, newStore]);
       selectStore(id);
-      // createStore でタスク行が INSERT された後でないと due_date の UPDATE が効かないため await する
       void (async () => {
-        await onAddStore?.(id, profile);
-        if (addedDueDates.length > 0) void onSaveDueDates?.(addedDueDates);
+        try {
+          await onAddStore?.(id, profile);
+          if (addedDueDates.length > 0) await onSaveDueDates?.(addedDueDates);
+        } catch (e) {
+          handleSaveError(e);
+        }
       })();
     },
-    [selectStore, onAddStore, onSaveDueDates, taskDueDateOffsets],
+    [selectStore, onAddStore, onSaveDueDates, taskDueDateOffsets, handleSaveError],
   );
 
   const deleteStore = useCallback(
@@ -313,9 +323,9 @@ export function Workspace({
         selectStore(remaining[0].id);
       }
       setStores(remaining);
-      void onDeleteStore?.(storeId);
+      onDeleteStore?.(storeId).catch(handleSaveError);
     },
-    [stores, selectedStoreId, selectStore, onDeleteStore],
+    [stores, selectedStoreId, selectStore, onDeleteStore, handleSaveError],
   );
 
   // 対象店舗のタスク期日を openDate / firstDeliveryDate から一括計算して上書きする
@@ -351,9 +361,9 @@ export function Workspace({
         }),
       );
 
-      if (updated.length > 0) void onSaveDueDates?.(updated);
+      if (updated.length > 0) onSaveDueDates?.(updated).catch(handleSaveError);
     },
-    [stores, taskDueDateOffsets, onSaveDueDates],
+    [stores, taskDueDateOffsets, onSaveDueDates, handleSaveError],
   );
 
   // プロフィール変更を state と DB に反映
@@ -364,7 +374,7 @@ export function Workspace({
       const currentProfile = currentStore.profile;
       const newProfile = { ...currentProfile, ...updates };
       setProfile(newProfile);
-      void onSaveProfile?.(selectedStoreId, newProfile);
+      onSaveProfile?.(selectedStoreId, newProfile).catch(handleSaveError);
 
       // トグルが ON になったとき、対応タスクの dueDate が空なら自動設定する
       // プロフィールフラグ → 対応する Task の requiresXxx フラグのマッピング
@@ -417,9 +427,9 @@ export function Workspace({
           };
         }),
       );
-      if (toggleUpdated.length > 0) void onSaveDueDates?.(toggleUpdated);
+      if (toggleUpdated.length > 0) onSaveDueDates?.(toggleUpdated).catch(handleSaveError);
     },
-    [selectedStoreId, stores, setProfile, onSaveProfile, taskDueDateOffsets, onSaveDueDates],
+    [selectedStoreId, stores, setProfile, onSaveProfile, taskDueDateOffsets, onSaveDueDates, handleSaveError],
   );
 
   // オープン日変更ハンドラ：既存値があれば確認ダイアログ経由
@@ -472,9 +482,9 @@ export function Workspace({
           return { ...s, status: toStatus };
         }),
       );
-      void onSaveStoreStatus?.(id, toStatus);
+      onSaveStoreStatus?.(id, toStatus).catch(handleSaveError);
     },
-    [onSaveStoreStatus],
+    [onSaveStoreStatus, handleSaveError],
   );
 
   const storeGroups = useMemo(() => {
@@ -607,6 +617,17 @@ export function Workspace({
           onAddStore={addStore}
         />
         <SidebarInset className="flex min-w-0 flex-col bg-background">
+          {saveError && (
+            <div className="shrink-0 bg-destructive/10 px-4 py-2 text-sm text-destructive flex items-center justify-between gap-2">
+              <span>⚠ 保存に失敗しました: {saveError}</span>
+              <button
+                onClick={() => setSaveError(null)}
+                className="shrink-0 text-xs underline"
+              >
+                閉じる
+              </button>
+            </div>
+          )}
           <GlobalHeader
             storeName={activeStore.profile.name}
             urgencySettings={urgencySettings}

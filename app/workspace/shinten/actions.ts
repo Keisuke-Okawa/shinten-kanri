@@ -108,21 +108,37 @@ export async function getWorkspaceData(): Promise<Store[]> {
 }
 
 export async function updateStoreStatus(storeId: string, status: StoreStatusKey): Promise<void> {
-  await sql`UPDATE stores SET status = ${status} WHERE id = ${storeId};`;
+  try {
+    await sql`UPDATE stores SET status = ${status} WHERE id = ${storeId};`;
+  } catch (e) {
+    console.error('[DB] updateStoreStatus failed:', e);
+    throw e;
+  }
 }
 
 export async function updateTaskStatus(taskId: string, status: TaskStatusKey): Promise<void> {
-  await sql`UPDATE tasks SET status = ${status} WHERE id = ${taskId};`;
+  try {
+    await sql`UPDATE tasks SET status = ${status} WHERE id = ${taskId};`;
+  } catch (e) {
+    console.error('[DB] updateTaskStatus failed:', e);
+    throw e;
+  }
 }
 
 export async function toggleSubtaskCompleted(subtaskId: string, completed: boolean): Promise<void> {
   const compStr = completed ? 'true' : 'false';
-  await sql`UPDATE subtasks SET completed = ${compStr} WHERE id = ${subtaskId};`;
+  try {
+    await sql`UPDATE subtasks SET completed = ${compStr} WHERE id = ${subtaskId};`;
+  } catch (e) {
+    console.error('[DB] toggleSubtaskCompleted failed:', e);
+    throw e;
+  }
 }
 
 export async function updateStoreProfile(storeId: string, profile: StoreProfile): Promise<void> {
   const b = (v: boolean) => (v ? 'true' : 'false');
-  await sql`
+  try {
+    await sql`
     UPDATE store_profiles SET
       customer_code               = ${profile.customerCode},
       name                        = ${profile.name},
@@ -172,10 +188,19 @@ export async function updateStoreProfile(storeId: string, profile: StoreProfile)
       open_category               = ${profile.openCategory}
     WHERE store_id = ${storeId};
   `;
+  } catch (e) {
+    console.error('[DB] updateStoreProfile failed:', e);
+    throw e;
+  }
 }
 
 export async function updateTaskDetail(taskId: string, memo: string, dueDate: string): Promise<void> {
-  await sql`UPDATE tasks SET memo = ${memo}, due_date = ${dueDate} WHERE id = ${taskId};`;
+  try {
+    await sql`UPDATE tasks SET memo = ${memo}, due_date = ${dueDate} WHERE id = ${taskId};`;
+  } catch (e) {
+    console.error('[DB] updateTaskDetail failed:', e);
+    throw e;
+  }
 }
 
 export async function bulkUpdateTaskDueDates(
