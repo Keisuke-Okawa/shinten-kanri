@@ -74,6 +74,9 @@ const EMPTY_PROFILE: StoreProfile = {
   customerWorkStartWeekend: "",
   customerWorkEndWeekend: "",
   pane2Memo: "",
+  keyCustodyType: "",
+  keyboxCode: "",
+  openCategory: "開店",
 };
 
 // ── Enter キーで次フィールドにフォーカス移動 ───────────────────

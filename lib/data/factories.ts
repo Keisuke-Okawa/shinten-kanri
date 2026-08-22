@@ -16,7 +16,7 @@ export function createMinimalStoreProfile(name: string): StoreProfile {
     phone: "",
     managerName: "",
     paymentMethod: "振込",
-    collectionPerson: "",
+    collectionPerson: "営業",
     deliveryTimeStart: "",
     deliveryTimeEnd: "",
     hasLunch: false,
@@ -29,7 +29,7 @@ export function createMinimalStoreProfile(name: string): StoreProfile {
     smokingPolicy: "禁煙",
     deliveryNotes: "",
     specialNotes: "",
-    invoiceType: "納品書",
+    invoiceType: "カク伝",
     serverInstallDate: "",
     handoverDate: "",
     accountChangeEmptyReturn: false,
@@ -51,6 +51,9 @@ export function createMinimalStoreProfile(name: string): StoreProfile {
     customerWorkStartWeekend: "",
     customerWorkEndWeekend: "",
     pane2Memo: "",
+    keyCustodyType: "",
+    keyboxCode: "",
+    openCategory: "開店",
   };
 }
 

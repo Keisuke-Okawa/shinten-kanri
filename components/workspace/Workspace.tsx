@@ -638,6 +638,8 @@ export function Workspace({
               onTogglePane4={togglePane4}
               onUpdateTask={updateTask}
               onUpdateProfile={updateProfilePartial}
+              onUpdateOpenDate={handleUpdateOpenDate}
+              onUpdateFirstDeliveryDate={handleUpdateFirstDeliveryDate}
             />
           </div>
         </SidebarInset>
