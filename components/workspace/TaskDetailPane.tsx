@@ -620,8 +620,8 @@ function VehicleReportDetail({
             labelWidth={VR_FIELD_LABEL_WIDTH}
           >
             <YesNoToggleGroup
-              value={profile.keyCustody}
-              onChange={(v) => update("keyCustody", v)}
+              value={profile.miscBottle}
+              onChange={(v) => update("miscBottle", v)}
               ariaLabelPrefix="雑瓶回収"
             />
           </InlineFieldRow>
