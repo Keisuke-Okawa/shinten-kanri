@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import {
   type StoreProfile,
@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { Check, Pencil, X } from "lucide-react";
+import { Check, Pencil, X, Clipboard } from "lucide-react";
 import { Toggle } from "@/components/ui/toggle";
 import {
   InlineTextField,
@@ -325,6 +325,33 @@ function VehicleReportDetail({
     key: K,
     value: StoreProfile[K],
   ) => onUpdateProfile({ [key]: value });
+
+  const [exteriorImageUrl, setExteriorImageUrl] = useState<string | null>(null);
+  const prevExteriorUrl = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (prevExteriorUrl.current && prevExteriorUrl.current !== exteriorImageUrl) {
+      URL.revokeObjectURL(prevExteriorUrl.current);
+    }
+    prevExteriorUrl.current = exteriorImageUrl;
+  }, [exteriorImageUrl]);
+
+  async function handlePasteExterior() {
+    try {
+      const items = await navigator.clipboard.read();
+      for (const item of items) {
+        const imageType = item.types.find((t) => t.startsWith("image/"));
+        if (imageType) {
+          const blob = await item.getType(imageType);
+          const url = URL.createObjectURL(blob);
+          setExteriorImageUrl(url);
+          return;
+        }
+      }
+    } catch {
+      // クリップボードへのアクセス権がないか、画像がない場合は何もしない
+    }
+  }
 
   return (
     <div className="flex flex-col gap-1">
@@ -671,11 +698,34 @@ function VehicleReportDetail({
         />
         <div className="mt-3 flex flex-col gap-2">
           <Button variant="outline" size="sm" className="w-full">
-            写真を添付
-          </Button>
-          <Button variant="outline" size="sm" className="w-full">
             地図を添付
           </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full"
+            onClick={handlePasteExterior}
+          >
+            <Clipboard className="mr-1.5 size-3.5" />
+            外観を添付（クリップボードから貼り付け）
+          </Button>
+          {exteriorImageUrl && (
+            <div className="relative mt-1">
+              <img
+                src={exteriorImageUrl}
+                alt="外観"
+                className="w-full rounded-md border border-border object-cover"
+              />
+              <button
+                type="button"
+                aria-label="外観画像を削除"
+                onClick={() => setExteriorImageUrl(null)}
+                className="absolute top-1 right-1 flex size-5 items-center justify-center rounded-full bg-background/80 text-muted-foreground hover:text-foreground"
+              >
+                <X className="size-3.5" />
+              </button>
+            </div>
+          )}
         </div>
       </Pane4Section>
     </div>
