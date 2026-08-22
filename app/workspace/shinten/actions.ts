@@ -4,6 +4,7 @@ import { sql } from '@vercel/postgres';
 import { type Store, type StoreProfile, type StoreStatusKey, type TaskStatusKey } from '@/lib/schema';
 import { generateDefaultTasks } from '@/lib/defaultTasks';
 import { fetchTabelogStore, type TabelogStoreData } from '@/lib/tabelog/fetchTabelogStore';
+import { analyzeStoreImage } from '@/lib/ai/analyzeStoreImage';
 
 export async function getWorkspaceData(): Promise<Store[]> {
   try {
@@ -269,4 +270,11 @@ export async function fetchTabelogStoreAction(
   url: string,
 ): Promise<{ ok: true; data: TabelogStoreData } | { ok: false; error: string }> {
   return fetchTabelogStore(url);
+}
+
+export async function analyzeStoreImageAction(
+  imageBase64: string,
+  mimeType: string,
+): Promise<{ ok: true; data: Partial<StoreProfile> } | { ok: false; error: string }> {
+  return analyzeStoreImage(imageBase64, mimeType);
 }

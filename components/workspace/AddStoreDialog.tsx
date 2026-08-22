@@ -5,6 +5,7 @@ import { useRef, useState } from "react";
 import { type StoreProfile } from "@/lib/schema";
 import { PANE2_SECTION } from "@/lib/labels";
 import { TabelogImportField } from "@/components/workspace/TabelogImportField";
+import { ImageImportField } from "@/components/workspace/ImageImportField";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -214,6 +215,11 @@ export function AddStoreDialog({
               <CardContent>
                 <FieldGroup>
                   <TabelogImportField
+                    onImport={(patch) =>
+                      setProfile((prev) => ({ ...prev, ...patch }))
+                    }
+                  />
+                  <ImageImportField
                     onImport={(patch) =>
                       setProfile((prev) => ({ ...prev, ...patch }))
                     }
