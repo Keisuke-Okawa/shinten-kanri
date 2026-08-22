@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { Link2, Trash2 } from "lucide-react";
+import { ImageIcon, Link2, Trash2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { needsKeyCustody } from "@/lib/computed/tasks";
@@ -41,6 +41,7 @@ import {
   InlineNumberField,
 } from "@/components/primitives";
 import { TabelogImportField } from "@/components/workspace/TabelogImportField";
+import { ImageImportField } from "@/components/workspace/ImageImportField";
 
 // ── Enter キーで次フィールドへ移動（AddStoreDialog と同じルール） ──
 function focusNextInput(container: HTMLElement, current: HTMLElement) {
@@ -135,6 +136,19 @@ export function StoreProfilePane({
             <CardHeader className="pb-2">
               <CardTitle>{PANE2_SECTION.basic}</CardTitle>
               <CardAction className="flex items-center gap-1">
+                <Popover>
+                  <PopoverTrigger
+                    aria-label="画像からAIで読み込む"
+                    className="flex size-7 items-center justify-center rounded-md text-muted-foreground/40 outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <ImageIcon className="size-4" />
+                  </PopoverTrigger>
+                  <PopoverContent side="bottom" align="end" className="w-80">
+                    <ImageImportField
+                      onImport={(patch) => onUpdateProfile(patch)}
+                    />
+                  </PopoverContent>
+                </Popover>
                 <Popover>
                   <PopoverTrigger
                     aria-label="食べログから読み込む"

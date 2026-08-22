@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { ImageIcon, Loader2, X } from "lucide-react";
+import { ClipboardPaste, ImageIcon, Loader2, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { type StoreProfile } from "@/lib/schema";
@@ -30,9 +30,8 @@ export function ImageImportField({ onImport }: Props) {
     message: string;
   } | null>(null);
 
-  const handleFileChange = (f: File | null) => {
+  const applyFile = (f: File) => {
     setStatus(null);
-    if (!f) return;
 
     if (!ACCEPTED_TYPES.includes(f.type)) {
       setStatus({
@@ -52,6 +51,38 @@ export function ImageImportField({ onImport }: Props) {
     setFile(f);
     const objectUrl = URL.createObjectURL(f);
     setPreview(objectUrl);
+  };
+
+  const handleFileChange = (f: File | null) => {
+    if (f) applyFile(f);
+  };
+
+  const handlePaste = async () => {
+    try {
+      const items = await navigator.clipboard.read();
+      for (const item of items) {
+        const imageType = item.types.find((t) => ACCEPTED_TYPES.includes(t));
+        if (imageType) {
+          const blob = await item.getType(imageType);
+          const pastedFile = new File([blob], "clipboard.png", {
+            type: imageType,
+          });
+          applyFile(pastedFile);
+          return;
+        }
+      }
+      setStatus({
+        type: "error",
+        message:
+          "クリップボードに画像がありません。先に画像をコピーしてください。",
+      });
+    } catch {
+      setStatus({
+        type: "error",
+        message:
+          "クリップボードへのアクセスが許可されていません。ブラウザの設定を確認してください。",
+      });
+    }
   };
 
   const handleClear = () => {
@@ -87,16 +118,28 @@ export function ImageImportField({ onImport }: Props) {
     <div className="flex flex-col gap-2">
       {/* ファイル選択エリア */}
       {!preview ? (
-        <button
-          type="button"
-          onClick={() => inputRef.current?.click()}
-          className="flex h-20 w-full cursor-pointer flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-input bg-transparent text-muted-foreground transition-colors hover:border-primary hover:text-primary"
-        >
-          <ImageIcon className="size-5" />
-          <span className="text-xs">
-            クリックして画像を選択（JPG / PNG / WebP）
-          </span>
-        </button>
+        <div className="flex flex-col gap-1.5">
+          <button
+            type="button"
+            onClick={() => inputRef.current?.click()}
+            className="flex h-20 w-full cursor-pointer flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-input bg-transparent text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+          >
+            <ImageIcon className="size-5" />
+            <span className="text-xs">
+              クリックして画像を選択（JPG / PNG / WebP）
+            </span>
+          </button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => void handlePaste()}
+            className="w-full"
+          >
+            <ClipboardPaste className="size-3.5" />
+            クリップボードから貼り付け
+          </Button>
+        </div>
       ) : (
         <div className="flex items-center gap-3">
           {/* サムネイル */}
@@ -108,7 +151,7 @@ export function ImageImportField({ onImport }: Props) {
           />
           <div className="flex flex-1 flex-col gap-1.5">
             <p className="truncate text-xs text-muted-foreground">
-              {file?.name}
+              {file?.name ?? "クリップボード"}
             </p>
             <div className="flex gap-1.5">
               <Button
