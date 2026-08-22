@@ -616,7 +616,7 @@ export function Workspace({
             taskDueDateOffsets={taskDueDateOffsets}
             onSaveTaskDueDateOffsets={handleSaveTaskDueDateOffsets}
           />
-          <div className="flex min-h-0 flex-1">
+          <div className="flex min-h-0 flex-1 max-md:overflow-x-auto max-md:snap-x max-md:snap-mandatory">
             <StoreProfilePane
               key={activeStore.id}
               profile={activeStore.profile}

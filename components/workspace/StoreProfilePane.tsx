@@ -114,7 +114,7 @@ export function StoreProfilePane({
 
   return (
     <AlertDialog>
-    <section className="flex w-[400px] shrink-0 flex-col border-r border-border bg-background">
+    <section className="flex w-[400px] shrink-0 flex-col border-r border-border bg-background max-md:min-w-[85vw] max-md:snap-start">
       <ScrollArea className="min-h-0 flex-1">
         <div
           className="flex flex-col gap-4 p-4"

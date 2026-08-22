@@ -41,6 +41,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { SectionLabel } from "@/components/primitives/SectionLabel";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 // ── 設定サブビュー: タスク期日オフセット編集 ──────────────────────────
 
@@ -405,6 +406,7 @@ export function GlobalHeader({
 
   return (
     <header className="flex h-12 shrink-0 items-center gap-2 border-b border-border bg-background px-3">
+      <SidebarTrigger className="shrink-0 md:hidden" />
       <Breadcrumb
         className="min-w-0 flex-1 overflow-hidden"
         aria-label="パンくず"

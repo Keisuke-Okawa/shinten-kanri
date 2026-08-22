@@ -151,7 +151,7 @@ export function TaskListPane({
   const [dialogOpen, setDialogOpen] = useState(false);
 
   return (
-    <section className="flex min-w-0 flex-1 flex-col bg-canvas">
+    <section className="flex min-w-0 flex-1 flex-col bg-canvas max-md:min-w-[85vw] max-md:snap-start">
       <ScrollArea className="min-h-0 flex-1">
         <div className="mx-auto flex max-w-3xl flex-col gap-2 px-6 py-6">
           {tasks.filter((task) => task.displayStatus !== "na").map((task) => {

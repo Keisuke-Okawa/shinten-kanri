@@ -785,7 +785,7 @@ export function TaskDetailPane({
     <aside
       className={cn(
         "flex shrink-0 flex-col border-l border-border bg-background",
-        pane4Open ? "w-[400px]" : "w-12",
+        pane4Open ? "w-[400px] max-md:min-w-[85vw] max-md:snap-start" : "w-12",
       )}
     >
       {pane4Open && task ? (
