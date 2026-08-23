@@ -288,15 +288,20 @@ export function StoreProfilePane({
                     onPressedChange={(v) => update("newStore", v)}
                   />
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <span className="shrink-0 text-muted-foreground">新店</span>
+                  <ConditionToggle
+                    label="飲食"
+                    pressed={profile.dining}
+                    onPressedChange={(v) => update("dining", v)}
+                  />
                   <ConditionToggle
                     label="雑瓶"
                     pressed={profile.miscBottle}
                     onPressedChange={(v) => update("miscBottle", v)}
                   />
                   <ConditionToggle
-                    label="鍵預かり"
+                    label="鍵預"
                     pressed={profile.keyCustody}
                     onPressedChange={(v) => update("keyCustody", v)}
                   />

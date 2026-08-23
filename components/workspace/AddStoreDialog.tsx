@@ -29,7 +29,7 @@ import { Toggle } from "@/components/ui/toggle";
 import { InlineDateField } from "@/components/primitives";
 
 // ── デフォルトプロフィール ──────────────────────────────────────
-// WEB・雑瓶 = ON、それ以外のトグルは OFF、テキストはすべて空
+// WEB・雑瓶・飲食 = ON、それ以外のトグルは OFF、テキストはすべて空
 
 const EMPTY_PROFILE: StoreProfile = {
   customerCode: "",
@@ -67,6 +67,7 @@ const EMPTY_PROFILE: StoreProfile = {
   sponsorship: false,
   newStore: false,
   miscBottle: true,
+  dining: true,
   keyCustody: false,
   congratulatoryFlowers: false,
   proxyDelivery: false,
@@ -383,15 +384,20 @@ export function AddStoreDialog({
                       onPressedChange={(v) => update("newStore", v)}
                     />
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <span className="shrink-0 text-muted-foreground">新店</span>
+                    <ConditionToggle
+                      label="飲食"
+                      pressed={profile.dining}
+                      onPressedChange={(v) => update("dining", v)}
+                    />
                     <ConditionToggle
                       label="雑瓶"
                       pressed={profile.miscBottle}
                       onPressedChange={(v) => update("miscBottle", v)}
                     />
                     <ConditionToggle
-                      label="鍵預かり"
+                      label="鍵預"
                       pressed={profile.keyCustody}
                       onPressedChange={(v) => update("keyCustody", v)}
                     />

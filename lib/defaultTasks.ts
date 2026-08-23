@@ -24,6 +24,7 @@ type TaskTemplate = {
   requiresSponsorship?: boolean;
   requiresNewStore?: boolean;
   requiresMiscBottle?: boolean;
+  requiresDining?: boolean;
 };
 
 const TASK_TEMPLATES: TaskTemplate[] = [
@@ -121,6 +122,22 @@ const TASK_TEMPLATES: TaskTemplate[] = [
     kind: "standard",
     requiresMiscBottle: true,
   },
+  {
+    name: "飲食訪問",
+    kind: "standard",
+    requiresDining: true,
+    subtasks: [
+      { name: "メーカー同行依頼", completed: false },
+      { name: "上長同行依頼", completed: false },
+      { name: "飲食訪問申請", completed: false },
+      { name: "予約", completed: false },
+    ],
+  },
+  {
+    name: "飲食同行精算",
+    kind: "standard",
+    requiresDining: true,
+  },
 ];
 
 export const TASK_TEMPLATE_NAMES: string[] = TASK_TEMPLATES.map((t) => t.name);
@@ -154,6 +171,7 @@ export function generateDefaultTasks(storeId: string): Task[] {
       ...(tmpl.requiresSponsorship ? { requiresSponsorship: true } : {}),
       ...(tmpl.requiresNewStore ? { requiresNewStore: true } : {}),
       ...(tmpl.requiresMiscBottle ? { requiresMiscBottle: true } : {}),
+      ...(tmpl.requiresDining ? { requiresDining: true } : {}),
     };
   });
 }

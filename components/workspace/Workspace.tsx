@@ -380,7 +380,14 @@ export function Workspace({
       // プロフィールフラグ → 対応する Task の requiresXxx フラグのマッピング
       type ToggleKey = keyof Pick<
         StoreProfile,
-        "webOrder" | "proxyDelivery" | "congratulatoryFlowers" | "keyCustody" | "sponsorship" | "newStore" | "miscBottle"
+        | "webOrder"
+        | "proxyDelivery"
+        | "congratulatoryFlowers"
+        | "keyCustody"
+        | "sponsorship"
+        | "newStore"
+        | "miscBottle"
+        | "dining"
       >;
       const toggleToTaskFlag: Record<ToggleKey, keyof Task> = {
         webOrder: "requiresWebOrder",
@@ -390,6 +397,7 @@ export function Workspace({
         sponsorship: "requiresSponsorship",
         newStore: "requiresNewStore",
         miscBottle: "requiresMiscBottle",
+        dining: "requiresDining",
       };
       const toggleKeys = Object.keys(toggleToTaskFlag) as ToggleKey[];
       const newlyActivated = toggleKeys.filter(

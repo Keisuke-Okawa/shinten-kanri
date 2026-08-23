@@ -39,6 +39,7 @@ export function isTaskApplicable(task: Task, profile: StoreProfile): boolean {
   if (task.requiresSponsorship && !profile.sponsorship) return false;
   if (task.requiresNewStore && !profile.newStore) return false;
   if (task.requiresMiscBottle && !profile.miscBottle) return false;
+  if (task.requiresDining && !profile.dining) return false;
   return true;
 }
 

@@ -39,6 +39,7 @@
       "sponsorship": false,
       "newStore": true,
       "miscBottle": false,
+      "dining": true,
       "keyCustody": false,
       "congratulatoryFlowers": true,
       "proxyDelivery": false,
@@ -184,6 +185,28 @@
         "status": "notStarted",
         "dueDate": "",
         "requiresMiscBottle": true
+      },
+      {
+        "id": "t1-16",
+        "name": "飲食訪問",
+        "kind": "standard",
+        "status": "notStarted",
+        "dueDate": "2026-06-10",
+        "requiresDining": true,
+        "subtasks": [
+          { "id": "t1-16-1", "name": "メーカー同行依頼", "completed": false },
+          { "id": "t1-16-2", "name": "上長同行依頼", "completed": false },
+          { "id": "t1-16-3", "name": "飲食訪問申請", "completed": false },
+          { "id": "t1-16-4", "name": "予約", "completed": false }
+        ]
+      },
+      {
+        "id": "t1-17",
+        "name": "飲食同行精算",
+        "kind": "standard",
+        "status": "notStarted",
+        "dueDate": "2026-07-05",
+        "requiresDining": true
       }
     ]
   },
@@ -227,6 +250,7 @@
       "sponsorship": false,
       "newStore": true,
       "miscBottle": false,
+      "dining": true,
       "keyCustody": false,
       "congratulatoryFlowers": false,
       "proxyDelivery": true,
@@ -279,6 +303,28 @@
         "status": "notStarted",
         "dueDate": "",
         "requiresMiscBottle": true
+      },
+      {
+        "id": "t2-6",
+        "name": "飲食訪問",
+        "kind": "standard",
+        "status": "notStarted",
+        "dueDate": "2026-06-20",
+        "requiresDining": true,
+        "subtasks": [
+          { "id": "t2-6-1", "name": "メーカー同行依頼", "completed": false },
+          { "id": "t2-6-2", "name": "上長同行依頼", "completed": false },
+          { "id": "t2-6-3", "name": "飲食訪問申請", "completed": false },
+          { "id": "t2-6-4", "name": "予約", "completed": false }
+        ]
+      },
+      {
+        "id": "t2-7",
+        "name": "飲食同行精算",
+        "kind": "standard",
+        "status": "notStarted",
+        "dueDate": "2026-07-15",
+        "requiresDining": true
       }
     ]
   },
@@ -322,6 +368,7 @@
       "sponsorship": false,
       "newStore": false,
       "miscBottle": false,
+      "dining": false,
       "keyCustody": false,
       "congratulatoryFlowers": false,
       "proxyDelivery": false,
@@ -366,6 +413,28 @@
         "status": "notStarted",
         "dueDate": "",
         "requiresMiscBottle": true
+      },
+      {
+        "id": "t3-5",
+        "name": "飲食訪問",
+        "kind": "standard",
+        "status": "notStarted",
+        "dueDate": "2026-03-16",
+        "requiresDining": true,
+        "subtasks": [
+          { "id": "t3-5-1", "name": "メーカー同行依頼", "completed": false },
+          { "id": "t3-5-2", "name": "上長同行依頼", "completed": false },
+          { "id": "t3-5-3", "name": "飲食訪問申請", "completed": false },
+          { "id": "t3-5-4", "name": "予約", "completed": false }
+        ]
+      },
+      {
+        "id": "t3-6",
+        "name": "飲食同行精算",
+        "kind": "standard",
+        "status": "notStarted",
+        "dueDate": "2026-04-10",
+        "requiresDining": true
       }
     ]
   }

@@ -27,6 +27,8 @@ export const DEFAULT_TASK_DUE_DATE_OFFSETS: TaskDueDateOffsets = {
   協賛支払い: { reference: "openDate", days: -7 }, // 7日後
   企業調査: { reference: "openDate", days: 14 },
   契約書: { reference: "openDate", days: 14 },
+  飲食訪問: { reference: "openDate", days: 20 },
+  飲食同行精算: { reference: "openDate", days: -5 }, // 5日後
   // ── 初回納品日基準 ──
   新規コード作成: { reference: "firstDeliveryDate", days: 5 },
   "鍵預かり・キーボックス": { reference: "firstDeliveryDate", days: 3 },

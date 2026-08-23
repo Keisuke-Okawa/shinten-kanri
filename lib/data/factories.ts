@@ -43,6 +43,7 @@ export function createMinimalStoreProfile(name: string): StoreProfile {
     sponsorship: false,
     newStore: false,
     miscBottle: false,
+    dining: false,
     keyCustody: false,
     congratulatoryFlowers: false,
     proxyDelivery: false,

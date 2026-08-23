@@ -79,6 +79,7 @@ export const storeProfileSchema = z.object({
   sponsorship: z.boolean(),
   newStore: z.boolean(),
   miscBottle: z.boolean(),
+  dining: z.boolean(),
   keyCustody: z.boolean(),
   congratulatoryFlowers: z.boolean(),
   proxyDelivery: z.boolean(),
@@ -124,6 +125,7 @@ export const taskSchema = z.object({
   requiresSponsorship: z.boolean().optional(),
   requiresNewStore: z.boolean().optional(),
   requiresMiscBottle: z.boolean().optional(),
+  requiresDining: z.boolean().optional(),
 });
 export type Task = z.infer<typeof taskSchema>;
 

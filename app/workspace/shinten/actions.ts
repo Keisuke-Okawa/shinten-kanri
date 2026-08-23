@@ -3,6 +3,7 @@
 import { sql } from '@vercel/postgres';
 import { type Store, type StoreProfile, type StoreStatusKey, type TaskStatusKey } from '@/lib/schema';
 import { generateDefaultTasks } from '@/lib/defaultTasks';
+import { computeTaskDueDate } from '@/lib/taskDueDateOffsets';
 import { fetchTabelogStore, type TabelogStoreData } from '@/lib/tabelog/fetchTabelogStore';
 import { analyzeStoreImage } from '@/lib/ai/analyzeStoreImage';
 
@@ -10,9 +11,61 @@ async function ensureVehicleNumberColumn() {
   await sql`ALTER TABLE store_profiles ADD COLUMN IF NOT EXISTS vehicle_number TEXT NOT NULL DEFAULT '';`;
 }
 
+/** 飲食トグル列と、既存店に足りない飲食タスクを足す（完了店はトグルOFF） */
+async function ensureDiningSupport() {
+  await sql`ALTER TABLE store_profiles ADD COLUMN IF NOT EXISTS dining TEXT NOT NULL DEFAULT 'true';`;
+  await sql`ALTER TABLE tasks ADD COLUMN IF NOT EXISTS requires_dining TEXT NOT NULL DEFAULT 'false';`;
+
+  const { rows: missing } = await sql`
+    SELECT s.id, s.status, p.open_date
+    FROM stores s
+    LEFT JOIN store_profiles p ON p.store_id = s.id
+    WHERE NOT EXISTS (
+      SELECT 1 FROM tasks t WHERE t.store_id = s.id AND t.name = ${'飲食訪問'}
+    )
+  `;
+
+  for (const row of missing) {
+    const storeId = row.id as string;
+    const openDate = (row.open_date as string) ?? '';
+    if (row.status === 'completed') {
+      await sql`UPDATE store_profiles SET dining = ${'false'} WHERE store_id = ${storeId}`;
+    }
+
+    const diningTasks = generateDefaultTasks(storeId).filter((t) => t.requiresDining);
+    for (const task of diningTasks) {
+      const days = task.name === '飲食訪問' ? 20 : -5;
+      const dueDate = openDate ? computeTaskDueDate(openDate, days) : '';
+      await sql`
+        INSERT INTO tasks (
+          id, store_id, name, kind, status, due_date,
+          requires_web_order, requires_proxy_delivery, requires_congratulatory_flowers,
+          requires_key_custody, requires_sponsorship, requires_new_store, requires_misc_bottle,
+          requires_dining
+        ) VALUES (
+          ${task.id}, ${storeId}, ${task.name}, ${task.kind}, ${task.status}, ${dueDate},
+          ${'false'}, ${'false'}, ${'false'},
+          ${'false'}, ${'false'}, ${'false'}, ${'false'},
+          ${'true'}
+        )
+      `;
+      for (const sub of task.subtasks ?? []) {
+        await sql`
+          INSERT INTO subtasks (id, task_id, name, completed, requires_misc_bottle, pin_bottom)
+          VALUES (
+            ${sub.id}, ${task.id}, ${sub.name}, ${'false'},
+            ${'false'}, ${'false'}
+          )
+        `;
+      }
+    }
+  }
+}
+
 export async function getWorkspaceData(): Promise<Store[]> {
   try {
     await ensureVehicleNumberColumn();
+    await ensureDiningSupport();
     const { rows: dbStores } = await sql`SELECT * FROM stores ORDER BY id;`;
     const { rows: dbProfiles } = await sql`SELECT * FROM store_profiles;`;
     const { rows: dbTasks } = await sql`SELECT * FROM tasks ORDER BY store_id, id;`;
@@ -49,6 +102,7 @@ export async function getWorkspaceData(): Promise<Store[]> {
             requiresSponsorship: t.requires_sponsorship === 'true' ? true : undefined,
             requiresNewStore: t.requires_new_store === 'true' ? true : undefined,
             requiresMiscBottle: t.requires_misc_bottle === 'true' ? true : undefined,
+            requiresDining: t.requires_dining === 'true' ? true : undefined,
           };
         });
 
@@ -91,6 +145,7 @@ export async function getWorkspaceData(): Promise<Store[]> {
           sponsorship: profile.sponsorship === 'true',
           newStore: profile.new_store === 'true',
           miscBottle: profile.misc_bottle === 'true',
+          dining: profile.dining === 'true',
           keyCustody: profile.key_custody === 'true',
           congratulatoryFlowers: profile.congratulatory_flowers === 'true',
           proxyDelivery: profile.proxy_delivery === 'true',
@@ -181,6 +236,7 @@ export async function updateStoreProfile(storeId: string, profile: StoreProfile)
       sponsorship                 = ${b(profile.sponsorship)},
       new_store                   = ${b(profile.newStore)},
       misc_bottle                 = ${b(profile.miscBottle)},
+      dining                      = ${b(profile.dining)},
       key_custody                 = ${b(profile.keyCustody)},
       congratulatory_flowers      = ${b(profile.congratulatoryFlowers)},
       proxy_delivery              = ${b(profile.proxyDelivery)},
@@ -230,6 +286,7 @@ export async function deleteStore(id: string): Promise<void> {
 }
 
 export async function createStore(id: string, profile: StoreProfile): Promise<void> {
+  await ensureDiningSupport();
   const b = (v: boolean) => (v ? 'true' : 'false');
   const tasks = generateDefaultTasks(id);
 
@@ -247,7 +304,7 @@ export async function createStore(id: string, profile: StoreProfile): Promise<vo
       server_install_date, handover_date, account_change_empty_return,
       elevator_available, dedicated_entrance, notes_and_attachments,
       seat_count, avg_spend_per_customer, expected_sales,
-      web_order, sponsorship, new_store, misc_bottle, key_custody,
+      web_order, sponsorship, new_store, misc_bottle, dining, key_custody,
       congratulatory_flowers, proxy_delivery,
       customer_work_start_weekday, customer_work_end_weekday,
       customer_work_start_weekend, customer_work_end_weekend, pane2_memo,
@@ -262,7 +319,7 @@ export async function createStore(id: string, profile: StoreProfile): Promise<vo
       ${profile.serverInstallDate}, ${profile.handoverDate}, ${b(profile.accountChangeEmptyReturn)},
       ${b(profile.elevatorAvailable)}, ${b(profile.dedicatedEntrance)}, ${profile.notesAndAttachments},
       ${profile.seatCount}, ${profile.avgSpendPerCustomer}, ${profile.expectedSales},
-      ${b(profile.webOrder)}, ${b(profile.sponsorship)}, ${b(profile.newStore)}, ${b(profile.miscBottle)}, ${b(profile.keyCustody)},
+      ${b(profile.webOrder)}, ${b(profile.sponsorship)}, ${b(profile.newStore)}, ${b(profile.miscBottle)}, ${b(profile.dining)}, ${b(profile.keyCustody)},
       ${b(profile.congratulatoryFlowers)}, ${b(profile.proxyDelivery)},
       ${profile.customerWorkStartWeekday}, ${profile.customerWorkEndWeekday},
       ${profile.customerWorkStartWeekend}, ${profile.customerWorkEndWeekend}, ${profile.pane2Memo},
@@ -276,13 +333,14 @@ export async function createStore(id: string, profile: StoreProfile): Promise<vo
       INSERT INTO tasks (
         id, store_id, name, kind, status, due_date,
         requires_web_order, requires_proxy_delivery, requires_congratulatory_flowers,
-        requires_key_custody, requires_sponsorship, requires_new_store, requires_misc_bottle
+        requires_key_custody, requires_sponsorship, requires_new_store, requires_misc_bottle,
+        requires_dining
       ) VALUES (
         ${task.id}, ${id}, ${task.name}, ${task.kind}, ${task.status}, ${task.dueDate},
         ${b(task.requiresWebOrder ?? false)}, ${b(task.requiresProxyDelivery ?? false)},
         ${b(task.requiresCongratulatoryFlowers ?? false)}, ${b(task.requiresKeyCustody ?? false)},
         ${b(task.requiresSponsorship ?? false)}, ${b(task.requiresNewStore ?? false)},
-        ${b(task.requiresMiscBottle ?? false)}
+        ${b(task.requiresMiscBottle ?? false)}, ${b(task.requiresDining ?? false)}
       );
     `;
 
