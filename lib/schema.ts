@@ -88,6 +88,7 @@ export const storeProfileSchema = z.object({
   customerWorkEndWeekend: z.string(),
   pane2Memo: z.string(),
   // 号車報告書専用フィールド
+  vehicleNumber: z.string(),  // 号車番号
   keyCustodyType: z.string(), // "" | "あり" | "キーボックス" | "なし"
   keyboxCode: z.string(),     // キーボックス番号
   openCategory: z.string(),   // "" | "開店" | "帳合変更"

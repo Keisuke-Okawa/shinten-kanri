@@ -75,6 +75,7 @@ const EMPTY_PROFILE: StoreProfile = {
   customerWorkStartWeekend: "",
   customerWorkEndWeekend: "",
   pane2Memo: "",
+  vehicleNumber: "",
   keyCustodyType: "",
   keyboxCode: "",
   openCategory: "開店",

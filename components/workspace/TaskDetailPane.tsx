@@ -448,6 +448,17 @@ function VehicleReportDetail({
             />
           </InlineFieldRow>
           <InlineFieldRow
+            label="号車"
+            direction="horizontal"
+            labelWidth={VR_FIELD_LABEL_WIDTH}
+          >
+            <InlineTextField
+              value={profile.vehicleNumber}
+              onSave={(v) => update("vehicleNumber", v)}
+              ariaLabel="号車"
+            />
+          </InlineFieldRow>
+          <InlineFieldRow
             label="電話番号"
             direction="horizontal"
             labelWidth={VR_FIELD_LABEL_WIDTH}
@@ -459,14 +470,14 @@ function VehicleReportDetail({
             />
           </InlineFieldRow>
           <InlineFieldRow
-            label="店長"
+            label="責任者"
             direction="horizontal"
             labelWidth={VR_FIELD_LABEL_WIDTH}
           >
             <InlineTextField
               value={profile.managerName}
               onSave={(v) => update("managerName", v)}
-              ariaLabel="店長"
+              ariaLabel="責任者"
             />
           </InlineFieldRow>
 
@@ -485,9 +496,6 @@ function VehicleReportDetail({
               ariaLabelPrefix="支払方法"
             />
           </InlineFieldRow>
-
-          <Separator />
-
           <InlineFieldRow
             label="集金担当者"
             direction="horizontal"
@@ -499,6 +507,8 @@ function VehicleReportDetail({
               ariaLabel="集金担当者"
             />
           </InlineFieldRow>
+
+          <Separator />
           <InlineFieldRow
             label="号車納品時間"
             direction="horizontal"
