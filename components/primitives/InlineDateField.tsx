@@ -144,7 +144,15 @@ export function InlineDateField({
   const selected = parseISODate(value);
 
   if (freeText) {
-    return <FreeTextDateField value={value} onSave={onSave} ariaLabel={ariaLabel} />;
+    // 親（ペイン2など）から値が変わったらリマウントして表示を同期する
+    return (
+      <FreeTextDateField
+        key={value}
+        value={value}
+        onSave={onSave}
+        ariaLabel={ariaLabel}
+      />
+    );
   }
 
   return (

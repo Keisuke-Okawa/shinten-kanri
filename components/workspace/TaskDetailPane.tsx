@@ -383,7 +383,11 @@ function VehicleReportDetail({
       {/* タスク情報 */}
       <Pane4Section id="vr-meta" title="タスク情報">
         <dl className="flex flex-col gap-2.5 text-sm">
-          <InlineFieldRow label="期日">
+          <InlineFieldRow
+            label="期日"
+            direction="horizontal"
+            labelWidth={VR_FIELD_LABEL_WIDTH}
+          >
             <InlineDateField
               value={task.dueDate}
               onSave={(v) => onUpdateTask({ dueDate: v })}
@@ -481,8 +485,6 @@ function VehicleReportDetail({
             />
           </InlineFieldRow>
 
-          <Separator />
-
           {/* ── 配送・営業 ── */}
           <InlineFieldRow
             label="支払い"
@@ -578,6 +580,7 @@ function VehicleReportDetail({
               value={profile.serverInstallDate}
               onSave={(v) => update("serverInstallDate", v)}
               ariaLabel="サーバー設置日"
+              freeText
             />
           </InlineFieldRow>
           <InlineFieldRow
@@ -589,6 +592,7 @@ function VehicleReportDetail({
               value={profile.firstDeliveryDate}
               onSave={onUpdateFirstDeliveryDate}
               ariaLabel="初回納品日"
+              freeText
             />
           </InlineFieldRow>
           <InlineFieldRow
@@ -600,6 +604,7 @@ function VehicleReportDetail({
               value={profile.openDate}
               onSave={onUpdateOpenDate}
               ariaLabel="オープン日"
+              freeText
             />
           </InlineFieldRow>
           <InlineFieldRow
