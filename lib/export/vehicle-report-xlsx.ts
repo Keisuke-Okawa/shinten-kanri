@@ -135,14 +135,6 @@ async function fetchImage(
   return { buffer: await blob.arrayBuffer(), extension };
 }
 
-function excelColWidthToPx(width: number): number {
-  return Math.round(width * 7 + 5);
-}
-
-function excelRowHeightToPx(points: number): number {
-  return (points * 96) / 72;
-}
-
 function arrayBufferToBase64(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer);
   const chunk = 0x8000;
@@ -153,22 +145,42 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
   return btoa(binary);
 }
 
-function addCenteredImage(
+function excelColWidthToPx(width: number): number {
+  return Math.round(width * 7 + 5);
+}
+
+function excelRowHeightToPx(points: number): number {
+  return (points * 96) / 72;
+}
+
+export function mergedFrameSizePx(
+  worksheet: import("exceljs").Worksheet,
+  colStart1: number,
+  colEnd1: number,
+  row1: number,
+): { width: number; height: number } {
+  let width = 0;
+  for (let col = colStart1; col <= colEnd1; col++) {
+    width += excelColWidthToPx(Number(worksheet.getColumn(col).width ?? 8.43));
+  }
+  const height = excelRowHeightToPx(
+    Number(worksheet.getRow(row1).height ?? 15),
+  );
+  return { width, height };
+}
+
+/**
+ * 印刷修正前と同じ方式: 結合セルの内側 90% をピクセル指定で中央に置く。
+ * 用紙は fitToPage で 1 枚に縮小するので、画像を大きくしてもページは割れない。
+ */
+export function addCenteredImage(
   worksheet: import("exceljs").Worksheet,
   imageId: number,
   colStart1: number,
   colEnd1: number,
   row1: number,
 ) {
-  let frameWidth = 0;
-  for (let col = colStart1; col <= colEnd1; col++) {
-    frameWidth += excelColWidthToPx(
-      Number(worksheet.getColumn(col).width ?? 8.43),
-    );
-  }
-  const frameHeight = excelRowHeightToPx(
-    Number(worksheet.getRow(row1).height ?? 15),
-  );
+  const frame = mergedFrameSizePx(worksheet, colStart1, colEnd1, row1);
   const colSpan = colEnd1 - colStart1 + 1;
   worksheet.addImage(imageId, {
     tl: {
@@ -176,10 +188,23 @@ function addCenteredImage(
       row: row1 - 1 + IMAGE_INSET,
     },
     ext: {
-      width: frameWidth * (1 - IMAGE_INSET * 2),
-      height: frameHeight * (1 - IMAGE_INSET * 2),
+      width: frame.width * (1 - IMAGE_INSET * 2),
+      height: frame.height * (1 - IMAGE_INSET * 2),
     },
   });
+}
+
+/** A4 縦で幅・高さとも 1 ページに収める。Google 経由のテンプレではこの設定が落ちている。 */
+export function applyOnePagePrintLayout(
+  worksheet: import("exceljs").Worksheet,
+) {
+  worksheet.pageSetup.paperSize = 9;
+  worksheet.pageSetup.orientation = "portrait";
+  worksheet.pageSetup.fitToPage = true;
+  worksheet.pageSetup.fitToWidth = 1;
+  worksheet.pageSetup.fitToHeight = 1;
+  worksheet.pageSetup.printArea = "A1:G19";
+  worksheet.pageSetup.horizontalCentered = true;
 }
 
 export async function downloadVehicleReportXlsx({
@@ -228,6 +253,8 @@ export async function downloadVehicleReportXlsx({
     });
     addCenteredImage(worksheet, id, 5, 7, 19);
   }
+
+  applyOnePagePrintLayout(worksheet);
 
   const buffer = await workbook.xlsx.writeBuffer();
   const blob = new Blob([buffer], {

@@ -4,7 +4,10 @@ import ExcelJS from "exceljs";
 
 import { createMinimalStoreProfile } from "@/lib/data/factories";
 import {
+  addCenteredImage,
+  applyOnePagePrintLayout,
   buildVehicleReportCellValues,
+  mergedFrameSizePx,
   buildVehicleReportFilename,
   formatDeliveryTime,
   formatKeyCustody,
@@ -142,5 +145,63 @@ describe("template xlsx", () => {
     expect(sheet.getCell("C2").value).toBe("A001");
     expect(sheet.getCell("D2").value).toBe("居酒屋山田");
     expect(sheet.getCell("G8").value).toBe("なし");
+  });
+
+  it("A4縦・1ページに収める印刷設定を書き出す", async () => {
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(
+      Buffer.from(
+        await readFile("public/templates/号車報告書_template.xlsx"),
+      ) as unknown as import("exceljs").Buffer,
+    );
+    const sheet = workbook.worksheets[0];
+    applyOnePagePrintLayout(sheet);
+    const out = await workbook.xlsx.writeBuffer();
+
+    const reloaded = new ExcelJS.Workbook();
+    await reloaded.xlsx.load(out as unknown as import("exceljs").Buffer);
+    const setup = reloaded.worksheets[0].pageSetup;
+    expect(setup.paperSize).toBe(9);
+    expect(setup.orientation).toBe("portrait");
+    expect(setup.fitToPage).toBe(true);
+    expect(setup.fitToWidth).toBe(1);
+    expect(setup.fitToHeight).toBe(1);
+    expect(setup.printArea).toBe("A1:G19");
+  });
+
+  it("画像は結合セルの 90% サイズをピクセル指定する", async () => {
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(
+      Buffer.from(
+        await readFile("public/templates/号車報告書_template.xlsx"),
+      ) as unknown as import("exceljs").Buffer,
+    );
+    const sheet = workbook.worksheets[0];
+    const png = Buffer.from(
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+      "base64",
+    );
+    const id = workbook.addImage({
+      buffer: png as unknown as import("exceljs").Buffer,
+      extension: "png",
+    });
+    addCenteredImage(sheet, id, 1, 4, 19);
+    applyOnePagePrintLayout(sheet);
+
+    const out = Buffer.from(await workbook.xlsx.writeBuffer());
+    const tmp = "/tmp/vr-img.xlsx";
+    const { writeFile } = await import("node:fs/promises");
+    const { execFileSync } = await import("node:child_process");
+    await writeFile(tmp, out);
+    const xml = execFileSync("unzip", ["-p", tmp, "xl/drawings/drawing1.xml"], {
+      encoding: "utf8",
+    });
+
+    const frame = mergedFrameSizePx(sheet, 1, 4, 19);
+    expect(frame.width).toBeGreaterThan(200);
+    expect(frame.height).toBeGreaterThan(200);
+    expect(xml).toContain("oneCellAnchor");
+    expect(xml).toContain("a:ext");
+    expect(xml).not.toContain("twoCellAnchor");
   });
 });
