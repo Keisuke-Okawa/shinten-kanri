@@ -25,6 +25,7 @@ import {
   InlineNumberField,
 } from "@/components/primitives";
 import { Pane4Section } from "@/components/workspace/Pane4Section";
+import { downloadVehicleReportXlsx } from "@/lib/export/vehicle-report-xlsx";
 
 const TASK_STATUS_KEYS = ["notStarted", "inProgress", "completed"] as const;
 type EditableTaskStatusKey = (typeof TASK_STATUS_KEYS)[number];
@@ -245,10 +246,7 @@ function StandardTaskDetail({
       <Pane4Section id="task-subtasks" title="子タスク">
         <div className="flex flex-col gap-1.5">
           {subtasks.map((subtask) => (
-            <div
-              key={subtask.id}
-              className="flex items-center gap-2"
-            >
+            <div key={subtask.id} className="flex items-center gap-2">
               <button
                 type="button"
                 aria-label={subtask.completed ? "完了を取り消す" : "完了にする"}
@@ -330,9 +328,14 @@ function VehicleReportDetail({
   const prevExteriorUrl = useRef<string | null>(null);
   const [mapImageUrl, setMapImageUrl] = useState<string | null>(null);
   const prevMapUrl = useRef<string | null>(null);
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (prevExteriorUrl.current && prevExteriorUrl.current !== exteriorImageUrl) {
+    if (
+      prevExteriorUrl.current &&
+      prevExteriorUrl.current !== exteriorImageUrl
+    ) {
       URL.revokeObjectURL(prevExteriorUrl.current);
     }
     prevExteriorUrl.current = exteriorImageUrl;
@@ -361,6 +364,23 @@ function VehicleReportDetail({
     return null;
   }
 
+  async function handleExportXlsx() {
+    if (exporting) return;
+    setExporting(true);
+    setExportError(null);
+    try {
+      await downloadVehicleReportXlsx({
+        profile,
+        mapImageUrl,
+        exteriorImageUrl,
+      });
+    } catch {
+      setExportError("出力に失敗しました。もう一度お試しください。");
+    } finally {
+      setExporting(false);
+    }
+  }
+
   async function handlePasteExterior() {
     const url = await pasteImageFromClipboard();
     if (url) setExteriorImageUrl(url);
@@ -373,11 +393,25 @@ function VehicleReportDetail({
 
   return (
     <div className="flex flex-col gap-1">
-      <div className="flex items-center justify-between gap-2 px-5 py-3">
-        <Badge variant="outline">号車報告書</Badge>
-        <span className="text-xs text-muted-foreground">
-          全項目入力で報告書完成
-        </span>
+      <div className="flex flex-col gap-2 px-5 py-3">
+        <div className="flex items-center justify-between gap-2">
+          <Badge variant="outline">号車報告書</Badge>
+          <Button
+            variant="default"
+            size="sm"
+            onClick={handleExportXlsx}
+            disabled={exporting}
+          >
+            {exporting ? "出力中..." : "号車報告書を出力"}
+          </Button>
+        </div>
+        {exportError ? (
+          <p className="text-xs text-destructive">{exportError}</p>
+        ) : (
+          <span className="text-xs text-muted-foreground">
+            全項目入力で報告書完成
+          </span>
+        )}
       </div>
 
       {/* タスク情報 */}
@@ -536,13 +570,17 @@ function VehicleReportDetail({
             labelWidth={VR_FIELD_LABEL_WIDTH}
           >
             <div className="flex items-center gap-1.5">
-              <span className="shrink-0 text-xs text-muted-foreground">平日</span>
+              <span className="shrink-0 text-xs text-muted-foreground">
+                平日
+              </span>
               <InlineTextField
                 value={profile.customerWorkStartWeekday}
                 onSave={(v) => update("customerWorkStartWeekday", v)}
                 ariaLabel="出勤時間（平日）"
               />
-              <span className="shrink-0 text-xs text-muted-foreground">土日</span>
+              <span className="shrink-0 text-xs text-muted-foreground">
+                土日
+              </span>
               <InlineTextField
                 value={profile.customerWorkStartWeekend}
                 onSave={(v) => update("customerWorkStartWeekend", v)}

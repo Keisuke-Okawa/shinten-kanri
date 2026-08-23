@@ -6,8 +6,13 @@ import { generateDefaultTasks } from '@/lib/defaultTasks';
 import { fetchTabelogStore, type TabelogStoreData } from '@/lib/tabelog/fetchTabelogStore';
 import { analyzeStoreImage } from '@/lib/ai/analyzeStoreImage';
 
+async function ensureVehicleNumberColumn() {
+  await sql`ALTER TABLE store_profiles ADD COLUMN IF NOT EXISTS vehicle_number TEXT NOT NULL DEFAULT '';`;
+}
+
 export async function getWorkspaceData(): Promise<Store[]> {
   try {
+    await ensureVehicleNumberColumn();
     const { rows: dbStores } = await sql`SELECT * FROM stores ORDER BY id;`;
     const { rows: dbProfiles } = await sql`SELECT * FROM store_profiles;`;
     const { rows: dbTasks } = await sql`SELECT * FROM tasks ORDER BY store_id, id;`;
@@ -94,6 +99,7 @@ export async function getWorkspaceData(): Promise<Store[]> {
           customerWorkStartWeekend: (profile.customer_work_start_weekend as string) ?? '',
           customerWorkEndWeekend: (profile.customer_work_end_weekend as string) ?? '',
           pane2Memo: (profile.pane2_memo as string) ?? '',
+          vehicleNumber: (profile.vehicle_number as string) ?? '',
           keyCustodyType: (profile.key_custody_type as string) ?? '',
           keyboxCode: (profile.keybox_code as string) ?? '',
           openCategory: (profile.open_category as string) ?? '開店',
@@ -183,6 +189,7 @@ export async function updateStoreProfile(storeId: string, profile: StoreProfile)
       customer_work_start_weekend = ${profile.customerWorkStartWeekend},
       customer_work_end_weekend   = ${profile.customerWorkEndWeekend},
       pane2_memo                  = ${profile.pane2Memo},
+      vehicle_number              = ${profile.vehicleNumber},
       key_custody_type            = ${profile.keyCustodyType},
       keybox_code                 = ${profile.keyboxCode},
       open_category               = ${profile.openCategory}
@@ -244,7 +251,7 @@ export async function createStore(id: string, profile: StoreProfile): Promise<vo
       congratulatory_flowers, proxy_delivery,
       customer_work_start_weekday, customer_work_end_weekday,
       customer_work_start_weekend, customer_work_end_weekend, pane2_memo,
-      key_custody_type, keybox_code, open_category
+      vehicle_number, key_custody_type, keybox_code, open_category
     ) VALUES (
       ${id},
       ${profile.customerCode}, ${profile.name}, ${profile.companyName}, ${profile.businessType},
@@ -259,7 +266,7 @@ export async function createStore(id: string, profile: StoreProfile): Promise<vo
       ${b(profile.congratulatoryFlowers)}, ${b(profile.proxyDelivery)},
       ${profile.customerWorkStartWeekday}, ${profile.customerWorkEndWeekday},
       ${profile.customerWorkStartWeekend}, ${profile.customerWorkEndWeekend}, ${profile.pane2Memo},
-      ${profile.keyCustodyType}, ${profile.keyboxCode}, ${profile.openCategory}
+      ${profile.vehicleNumber}, ${profile.keyCustodyType}, ${profile.keyboxCode}, ${profile.openCategory}
     );
   `;
 
