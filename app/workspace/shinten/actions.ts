@@ -6,6 +6,17 @@ import { generateDefaultTasks } from '@/lib/defaultTasks';
 import { computeTaskDueDate } from '@/lib/taskDueDateOffsets';
 import { fetchTabelogStore, type TabelogStoreData } from '@/lib/tabelog/fetchTabelogStore';
 import { analyzeStoreImage } from '@/lib/ai/analyzeStoreImage';
+import {
+  collectDueAlertItems,
+  formatDueAlertSubject,
+  formatDueAlertText,
+  getJstCalendarDate,
+} from '@/lib/dueAlert';
+import { sendDueAlertEmail } from '@/lib/dueAlertMail';
+
+export type DueAlertTestResult =
+  | { ok: true; redCount: number; yellowCount: number; empty: boolean }
+  | { ok: false; error: string };
 
 async function ensureVehicleNumberColumn() {
   await sql`ALTER TABLE store_profiles ADD COLUMN IF NOT EXISTS vehicle_number TEXT NOT NULL DEFAULT '';`;
@@ -367,4 +378,28 @@ export async function analyzeStoreImageAction(
   mimeType: string,
 ): Promise<{ ok: true; data: Partial<StoreProfile> } | { ok: false; error: string }> {
   return analyzeStoreImage(imageBase64, mimeType);
+}
+
+/** 設定画面のテスト送信。対象ゼロ件でも「対象なし」を送る */
+export async function sendDueAlertTest(): Promise<DueAlertTestResult> {
+  const stores = await getWorkspaceData();
+  const today = getJstCalendarDate();
+  const digest = collectDueAlertItems(stores, today);
+  const empty = digest.redCount === 0 && digest.yellowCount === 0;
+
+  const sent = await sendDueAlertEmail({
+    subject: formatDueAlertSubject(digest, { isTest: true }),
+    text: formatDueAlertText(digest, { isTest: true, today }),
+  });
+
+  if (!sent.ok) {
+    return { ok: false, error: sent.error };
+  }
+
+  return {
+    ok: true,
+    redCount: digest.redCount,
+    yellowCount: digest.yellowCount,
+    empty,
+  };
 }

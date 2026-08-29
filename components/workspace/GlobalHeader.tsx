@@ -1,7 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { ChevronLeft, ChevronRight, Settings } from "lucide-react";
+
+import {
+  sendDueAlertTest,
+  type DueAlertTestResult,
+} from "@/app/workspace/shinten/actions";
 
 import {
   DEFAULT_URGENCY_SETTINGS,
@@ -254,6 +259,8 @@ function SettingsForm({
   const [view, setView] = useState<SettingsView>("main");
   const [redDays, setRedDays] = useState(String(initialUrgency.redDays));
   const [yellowDays, setYellowDays] = useState(String(initialUrgency.yellowDays));
+  const [isTestPending, startTestTransition] = useTransition();
+  const [testResult, setTestResult] = useState<DueAlertTestResult | null>(null);
 
   const redNum = Math.max(1, parseInt(redDays, 10) || 1);
   const yellowNum = Math.max(redNum + 1, parseInt(yellowDays, 10) || redNum + 1);
@@ -339,6 +346,42 @@ function SettingsForm({
           <span>各タスクのデフォルト期日を設定</span>
           <ChevronRight className="size-4 text-muted-foreground" />
         </button>
+      </div>
+
+      <Separator />
+
+      <div className="flex flex-col gap-3">
+        <SectionLabel>期日メール通知</SectionLabel>
+        <p className="text-xs text-muted-foreground">
+          月〜金の朝7時に、赤・黄の未完了タスクを個人メールへ送ります。何もない朝は送りません。
+        </p>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={isTestPending}
+          onClick={() => {
+            startTestTransition(async () => {
+              const result = await sendDueAlertTest();
+              setTestResult(result);
+            });
+          }}
+        >
+          {isTestPending ? "送信中…" : "今すぐテスト送信"}
+        </Button>
+        {testResult ? (
+          <p
+            className={
+              testResult.ok ? "text-xs text-muted-foreground" : "text-xs text-destructive"
+            }
+          >
+            {testResult.ok
+              ? testResult.empty
+                ? "テストメールを送りました（対象なし）。"
+                : `テストメールを送りました（赤${testResult.redCount} / 黄${testResult.yellowCount}）。`
+              : testResult.error}
+          </p>
+        ) : null}
       </div>
 
       <Separator />
@@ -444,7 +487,7 @@ export function GlobalHeader({
           />
           <TooltipContent side="bottom">設定</TooltipContent>
         </Tooltip>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="max-h-[min(90vh,40rem)] max-w-sm overflow-y-auto">
           <DialogHeader>
             <DialogTitle>設定</DialogTitle>
           </DialogHeader>
