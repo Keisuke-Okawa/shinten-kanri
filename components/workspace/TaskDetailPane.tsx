@@ -330,6 +330,7 @@ function VehicleReportDetail({
   const prevMapUrl = useRef<string | null>(null);
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
+  const detailRootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (
@@ -391,8 +392,22 @@ function VehicleReportDetail({
     if (url) setMapImageUrl(url);
   }
 
+  function getMapsAddress(): string {
+    const live = detailRootRef.current
+      ?.querySelector<HTMLInputElement>('[aria-label="住所"]')
+      ?.value.trim();
+    return live || profile.address.trim();
+  }
+
+  function handleOpenGoogleMaps() {
+    const address = getMapsAddress();
+    if (!address) return;
+    const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+    window.open(url, "_blank", "noopener,noreferrer");
+  }
+
   return (
-    <div className="flex flex-col gap-1">
+    <div ref={detailRootRef} className="flex flex-col gap-1">
       <div className="flex flex-col gap-2 px-5 py-3">
         <div className="flex items-center justify-between gap-2">
           <Badge variant="outline">号車報告書</Badge>
@@ -768,6 +783,15 @@ function VehicleReportDetail({
           ariaLabel="注意事項"
         />
         <div className="mt-3 flex flex-col gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full"
+            onClick={handleOpenGoogleMaps}
+            disabled={!profile.address.trim()}
+          >
+            Googleマップを開く
+          </Button>
           <Button
             variant="outline"
             size="sm"
