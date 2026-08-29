@@ -855,6 +855,7 @@ export function TaskDetailPane({
             <div className="p-4 pt-2">
               {task.kind === "vehicleReport" ? (
                 <VehicleReportDetail
+                  key={task.id}
                   task={task}
                   profile={profile}
                   onUpdateTask={onUpdateTask}
@@ -863,7 +864,11 @@ export function TaskDetailPane({
                   onUpdateFirstDeliveryDate={onUpdateFirstDeliveryDate}
                 />
               ) : (
-                <StandardTaskDetail task={task} onUpdateTask={onUpdateTask} />
+                <StandardTaskDetail
+                  key={task.id}
+                  task={task}
+                  onUpdateTask={onUpdateTask}
+                />
               )}
             </div>
           </ScrollArea>
